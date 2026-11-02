@@ -37,7 +37,7 @@ export function JournalPage() {
           <label className="row small"><input type="checkbox" checked={isPrivate} onChange={(e) => setIsPrivate(e.target.checked)} /> Private (only I can see it)</label>
           <button className="btn primary" disabled={!text.trim()} onClick={save}>Save</button>
         </div>
-        {mode === 'parent' && <div className="small muted mt">Parent mode: private notes are not shown here.</div>}
+        {mode === 'parent' && <div className="small muted mt">Parent view: private notes are not shown here.</div>}
       </div>
       {entries.length === 0 ? <div className="empty">No notes yet. A line or two after a workout is plenty.</div> : (
         <div className="list">

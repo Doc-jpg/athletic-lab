@@ -1,9 +1,10 @@
-# Eli's Athletic Lab
+# Athletic Lab (built for Eli)
 
 A personal strength, mobility, athleticism and healthy-habits app for one young athlete. Offline-first web app for an iPhone home screen (Android works too), its own app next to Dugout Dad and Dugout Lab, never touching their data.
 
 - **Live app:** https://doc-jpg.github.io/athletic-lab/ (iPhone: Safari, Share, Add to Home Screen; Android: Chrome, menu, Install app). Open it once online so it can store itself for offline use.
 - **Code:** https://github.com/Doc-jpg/athletic-lab (every push to `main` redeploys through GitHub Actions).
+- **Who sets it up:** the parent, once, on the athlete's phone (two minutes); then the app talks to the kid. `docs/IPHONE_SETUP.md` has the exact steps and the optional parent copy.
 - **Docs:** `docs/` (architecture, decisions and lessons, research with sources, roadmap, iPhone and parent setup, design principles, the original master prompt).
 
 ## What it does

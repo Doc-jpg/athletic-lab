@@ -6,7 +6,7 @@ import { VitePWA } from 'vite-plugin-pwa';
 // its own manifest id, start URL and service-worker scope (the BASE_PATH), its own icon, and its own
 // IndexedDB database name ("athletic-lab"). Nothing here touches the other two apps.
 const base = process.env.BASE_PATH || '/';
-const appName = process.env.APP_NAME || "Eli's Athletic Lab";
+const appName = process.env.APP_NAME || 'Athletic Lab';
 const themeColor = '#1f2a44';
 
 export default defineConfig({

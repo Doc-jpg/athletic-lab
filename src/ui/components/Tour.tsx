@@ -19,7 +19,7 @@ const STOPS: Stop[] = [
   { route: '/progress', title: 'Progress against yourself only', text: 'Sessions, balance time, push-up level, consistency. You are only ever compared with your own earlier self. Badges here are never taken away.' },
   { route: '/habits', title: 'Habits and missions', text: 'Daily Foundations (three to six easy minutes), the everyday habits (water, meals, sleep, play), and three missions for the week.' },
   { route: '/journal', title: 'Notes in your own words', text: '"Push-ups were easier today." "Legs were really tired after basketball." Short notes like that help the app adjust. Mark a note private and only you see it.' },
-  { route: '/settings', anchor: 'parent', title: 'What a parent can see', text: 'Parent mode is behind a PIN. It shows completed workouts, sports and recovery days, progress, and any safety alerts. It never shows notes you marked private. This card lists all of it; nothing is hidden.' }
+  { route: '/settings', anchor: 'parent', title: 'What a parent can see', text: 'The parent view is behind a PIN. It shows completed workouts, sports and recovery days, progress, and any safety alerts. It never shows notes you marked private. This card lists all of it; nothing is hidden.' }
 ];
 
 interface TourApi { start: () => void; active: boolean }

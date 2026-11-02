@@ -10,7 +10,7 @@ import { nowIso } from '../../engine/types';
  * Backup (two-step share sheet so a cancelled share is not counted), parent pack, and restore with
  * a preview and a choice of Merge (never overwrites a newer record here) or Replace.
  */
-export function BackupPanel({ parentMode }: { parentMode: boolean }) {
+export function BackupPanel({ simple = false }: { simple?: boolean }) {
   const settings = useSettings();
   const toast = useToast();
   const [health, setHealth] = useState<StorageHealth | null>(null);
@@ -62,11 +62,11 @@ export function BackupPanel({ parentMode }: { parentMode: boolean }) {
       <div className="small muted">Last full backup: {settings.lastBackupAt ? timeAgo(settings.lastBackupAt) : 'never'}.</div>
       <div className="col mt">
         <button className="btn primary block" disabled={busy} onClick={() => prepare('full')}>Back up everything</button>
-        <button className="btn block" disabled={busy} onClick={() => prepare('parent')}>Make a parent pack (no private notes)</button>
-        <button className="btn block" onClick={() => fileRef.current?.click()}>Restore or merge a backup file</button>
+        {!simple && <button className="btn block" disabled={busy} onClick={() => prepare('parent')}>Make a parent pack (no private notes)</button>}
+        {!simple && <button className="btn block" onClick={() => fileRef.current?.click()}>Restore or merge a backup file</button>}
         <input ref={fileRef} type="file" accept=".zip,application/zip" className="hide" onChange={(e) => onFile(e.target.files?.[0])} />
       </div>
-      <p className="small muted mt">Remote parent access and automatic sync between phones are not enabled (there is no server). A parent pack sent by AirDrop, Messages or Mail and merged on the other phone is how records move for now. A backup is a ZIP file with checksums. Merge adds what is missing and keeps the newer copy of anything that differs; nothing on this phone is overwritten by an older copy. Replace wipes this phone first (new phone, or starting over). {parentMode ? 'A parent pack from Eli\'s phone merges into this one the same way.' : ''}</p>
+      {simple ? <p className="small muted mt">A backup is a ZIP file of everything on this phone. Save it to Files or iCloud Drive every few weeks. Restoring and parent packs are in the parent view.</p> : <p className="small muted mt">Remote parent access and automatic sync between phones are not enabled (there is no server). A parent pack sent by AirDrop, Messages or Mail and merged on the other phone is how records move for now. A backup is a ZIP file with checksums. Merge adds what is missing and keeps the newer copy of anything that differs; nothing on this phone is overwritten by an older copy. Replace wipes this phone first (new phone, or starting over).</p>}
 
       {pending && (
         <Sheet title={pending.scope === 'parent' ? 'Parent pack ready' : 'Backup ready'} onClose={() => setPending(null)} footer={<><button className="btn" onClick={() => setPending(null)}>Cancel</button><button className="btn primary" onClick={send}>Share or save</button></>}>

@@ -2,6 +2,18 @@
 
 Newest first. Append here; this is where the next session starts.
 
+## 2026-11-02 (afternoon), audience fix (Deren: "it felt confused as to who was the target audience")
+
+Deren opened the live site and the setup screen talked to Eli and to him at once, printed the parent PIN on screen, and asked "who is using it" under the name "Eli's Athletic Lab". He asked for the flow to be deliberate: who sets it up, and how Eli gets it.
+
+- **Two people, two jobs.** Setup is the parent's part, done once on the athlete's phone: whose phone this is, the athlete's name and birth year, sports, the parent's name, a PIN typed twice. Then a hand-off screen addressed to the kid (pick a look, take the tour). From there every screen Eli sees is his, except the "What Dad can see" card.
+- **The PIN is never shown on screen** and has no default. The one Deren chose is his to type.
+- **Name is "Athletic Lab"**; the app greets the athlete by name only after setup. The manifest and home-screen title match.
+- **A parent copy is a real path**: "My own phone" at setup lands on the pack instructions and puts the parent door at the top of Settings; `meta.deviceRole` remembers it.
+- **Everything a parent manages lives behind the PIN**: parent packs, restore, sample data, erase moved from Eli's Settings into the parent view. Eli's Settings keeps look, goals, the visibility card, help, tour, a single Back up button, and the parent door.
+- Lesson for the next app: write the first-run flow from each person's point of view before building it, and never put a secret in copy.
+- The acceptance walk now covers both phones (athlete setup and hand-off; parent-copy setup) and asserts the PIN does not appear in the hand-off text.
+
 ## 2026-11-02, Phase 1 build (from the "Build Eli's Athletic Lab" master prompt)
 
 What was carried over from Dugout Lab, on purpose:

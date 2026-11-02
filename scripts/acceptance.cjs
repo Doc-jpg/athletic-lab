@@ -23,16 +23,22 @@ const shot = (page, name) => page.screenshot({ path: path.join(shotsDir, `${name
   // --- Setup (three steps) ---
   console.log('Setup');
   await page.goto(URL);
-  await page.waitForSelector('text=Step 1 of 3');
-  await page.fill('input[placeholder="Eli"]', 'Eli');
-  await page.click('role=button[name="Next: the look"]');
+  await page.waitForSelector('text=whose phone is this?');
+  expect('setup speaks to the parent first', /for the parent/i.test(await body()), true);
+  await page.click('role=button[name="Next"]');
+  await page.waitForSelector('text=the athlete and you');
+  await page.fill('input[placeholder="First name"]', 'Eli');
+  await page.fill('input[placeholder="2014"]', '2014');
+  await page.fill('input[placeholder="Dad"]', 'Dad');
+  await page.fill('input[aria-label="Parent PIN"]', '7101');
+  await page.fill('input[aria-label="Parent PIN again"]', '7101');
+  await page.click('role=button[name="Done. Hand the phone over"]');
+  await page.waitForSelector('text=Hey Eli, this is yours');
+  expect('PIN is never shown on screen', /7101/.test(await body()), false);
   await page.click('text=Pro sports');
-  await page.click('role=button[name="Next: the parent"]');
-  await page.waitForSelector('text=Step 3 of 3');
-  await page.click('role=button[name="Finish setup"]');
-  await page.waitForSelector('text=You are set');
-  await page.click('role=button[name="Go to Today"]');
+  await page.click('role=button[name="Skip the tour"]');
   await page.waitForSelector('text=Hey Eli');
+  await page.waitForSelector('text=Take the tour');
   expect('tour offered once', /Take the tour/.test(await body()), true);
   await page.click('role=button[name="Not now"]');
   await shot(page, '01_today_fresh');
@@ -145,10 +151,10 @@ const shot = (page, name) => page.screenshot({ path: path.join(shotsDir, `${name
   // --- Acceptance 9: parent access, disclosed and authenticated ---
   console.log('Parent mode');
   await page.goto(URL + '#/settings');
-  await page.waitForSelector('text=What a parent can see');
+  await page.waitForSelector('text=What Dad can see');
   t = await body();
   expect('visibility card lists what is shown and what is not', /Not shown:.*private/.test(t), true);
-  await page.click('role=button[name="Enter parent mode"]');
+  await page.click('role=button[name="Open the parent view"]');
   await page.fill('input[aria-label="PIN"]', '0000');
   await page.click('role=button[name="Unlock"]');
   await settle();
@@ -198,7 +204,7 @@ const shot = (page, name) => page.screenshot({ path: path.join(shotsDir, `${name
   // --- Acceptance 12: its own app ---
   console.log('Identity');
   const manifest = await page.evaluate(async () => { const r = await fetch('manifest.webmanifest'); return r.json(); });
-  expect('manifest name', manifest.name, "Eli's Athletic Lab");
+  expect('manifest name', manifest.name, 'Athletic Lab');
   expect('manifest id is its own scope', typeof manifest.id === 'string' && manifest.id === manifest.scope, true);
   const dbs = await page.evaluate(async () => (await indexedDB.databases()).map((d) => d.name));
   expect('own IndexedDB database', dbs.includes('athletic-lab'), true);
@@ -224,6 +230,30 @@ const shot = (page, name) => page.screenshot({ path: path.join(shotsDir, `${name
   await shot(page, '09_tour_last');
   await page.click("role=button[name=\"Done, let's go\"]");
   await settle();
+
+  // --- Parent copy on the parent's own phone (fresh context = another phone) ---
+  console.log('Parent copy');
+  const ctx2 = await browser.newContext({ ...devices[process.env.DEVICE || 'iPhone 13'] });
+  const p2 = await ctx2.newPage();
+  p2.on('pageerror', (e) => { fails.push('pageerror ' + e.message); });
+  await p2.goto(URL);
+  await p2.waitForSelector('text=whose phone is this?');
+  await p2.click('role=button[name="My own phone (a parent copy)"]');
+  await p2.click('role=button[name="Next"]');
+  await p2.fill('input[placeholder="First name"]', 'Eli');
+  await p2.fill('input[placeholder="2014"]', '2014');
+  await p2.fill('input[placeholder="Dad"]', 'Dad');
+  await p2.fill('input[aria-label="Parent PIN"]', '7101');
+  await p2.fill('input[aria-label="Parent PIN again"]', '7101');
+  await p2.click('role=button[name="Finish"]');
+  await p2.waitForSelector('text=Parent copy ready');
+  expect('parent copy explains the pack flow', /Make a parent pack/.test(await p2.locator('body').innerText()), true);
+  await shot(p2, '10_parent_copy_ready');
+  await p2.click('role=button[name="Open Settings"]');
+  await p2.waitForSelector('text=For Dad');
+  const firstCard = await p2.locator('.app-main .card').first().innerText();
+  expect('parent door sits at the top on the parent copy', /For Dad/i.test(firstCard), true);
+  await ctx2.close();
 
   await browser.close();
   console.log(fails.length ? `\n${fails.length} FAILED\n` + fails.join('\n') : '\nALL PASSED');

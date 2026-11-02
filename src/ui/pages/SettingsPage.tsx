@@ -2,22 +2,23 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAthlete, useMeta, useSettings } from '../hooks';
 import { useMode } from '../mode';
-import { addGoal, setGoalStatus, updateAthlete, saveSettings, db } from '../../db/db';
-import { loadDemo, removeDemo } from '../../data/demo';
+import { addGoal, setGoalStatus, updateAthlete, saveSettings } from '../../db/db';
 import { BackupPanel } from '../components/BackupPanel';
-import { Sheet, Confirm, useToast } from '../components/Sheet';
+import { Sheet, useToast } from '../components/Sheet';
 import { useTour } from '../components/Tour';
 import type { ThemeChoice } from '../../engine/types';
 import { nowIso } from '../../engine/types';
 import { APP_NAME, APP_VERSION } from '../version';
 
+/** The card the athlete can read any time: the whole list of what the parent view shows. */
 export function VisibilityCard() {
   const settings = useSettings();
   const athlete = useAthlete();
+  const parent = settings.parentName ?? 'Your parent';
   return (
     <div className="card" data-tour="parent" style={{ borderLeft: '4px solid var(--accent-2)' }}>
-      <h3>What a parent can see</h3>
-      <p className="small">{settings.parentName ?? 'A parent'} can open Parent mode with a PIN. In Parent mode the app shows:</p>
+      <h3>What {parent} can see</h3>
+      <p className="small">{parent} has a view behind a PIN. It shows:</p>
       <ul className="small step-list">
         <li>Finished and skipped workouts, with sets, how they felt, and workout notes</li>
         <li>Sports you logged, check-ins, and recovery days</li>
@@ -25,12 +26,13 @@ export function VisibilityCard() {
         <li>Journal notes that are not marked private</li>
         <li>Safety alerts: pain, feeling sick, dizziness, a stopped workout, a tournament day, or a week with no rest day</li>
       </ul>
-      <p className="small"><strong>Not shown:</strong> journal notes marked private. There is no hidden tracking; this list is the whole list. A parent can also approve weights, turn exercises on or off, set how many strength days a week, and manage reminders.</p>
+      <p className="small"><strong>Not shown:</strong> journal notes marked private. There is no hidden tracking; this list is the whole list. {parent} can also approve weights, turn exercises on or off, set how many strength days a week, and manage reminders.</p>
       {!settings.visibilityNoticeSeenAt && athlete && <button className="btn sm" onClick={() => saveSettings({ visibilityNoticeSeenAt: nowIso() })}>Got it</button>}
     </div>
   );
 }
 
+/** Settings as the athlete sees them. Everything a parent manages lives behind the PIN on /parent. */
 export function SettingsPage() {
   const nav = useNavigate();
   const athlete = useAthlete();
@@ -38,21 +40,29 @@ export function SettingsPage() {
   const { mode, enterParent } = useMode();
   const tour = useTour();
   const toast = useToast();
-  const demoLoaded = useMeta('demoLoaded') === true;
+  const deviceRole = useMeta('deviceRole');
   const [pinOpen, setPinOpen] = useState(false);
   const [pin, setPin] = useState('');
   const [wrong, setWrong] = useState(false);
   const [goal, setGoal] = useState('');
-  const [resetOpen, setResetOpen] = useState(false);
   if (!athlete) return null;
+  const parent = settings.parentName ?? 'Parent';
   const tryPin = async () => {
     const ok = await enterParent(pin);
     setPin('');
     if (ok) { setPinOpen(false); setWrong(false); nav('/parent'); } else setWrong(true);
   };
+  const parentDoor = (
+    <div className="card">
+      <h3>For {parent}</h3>
+      <p className="small muted">The parent view needs the PIN.</p>
+      {mode === 'parent' ? <Link className="btn primary block" to="/parent">Open the parent view</Link> : <button className="btn block" onClick={() => setPinOpen(true)}>Open the parent view</button>}
+    </div>
+  );
   return (
     <div className="col">
       <div className="row between"><h1>Settings</h1><Link className="btn sm" to="/help">Help</Link></div>
+      {deviceRole === 'parent' && parentDoor}
 
       <div className="card">
         <h3>Look</h3>
@@ -74,35 +84,28 @@ export function SettingsPage() {
       <VisibilityCard />
 
       <div className="card">
-        <h3>Parent mode</h3>
-        <p className="small muted">For {settings.parentName ?? 'a parent'}. Needs the PIN.</p>
-        {mode === 'parent' ? <Link className="btn primary block" to="/parent">Open the parent dashboard</Link> : <button className="btn block" onClick={() => setPinOpen(true)}>Enter parent mode</button>}
-      </div>
-
-      <BackupPanel parentMode={mode === 'parent'} />
-
-      <div className="card">
         <h3>Learn the app</h3>
         <div className="col mt">
           <button className="btn block" onClick={() => { nav('/today'); setTimeout(tour.start, 150); }}>Take the one-minute tour</button>
           <Link className="btn block" to="/help">Questions and answers</Link>
-          {demoLoaded ? <button className="btn block" onClick={async () => { const n = await removeDemo(db); toast.show(`Removed ${n} sample records`); }}>Remove the sample data</button> : <button className="btn block" onClick={async () => { await loadDemo(db); toast.show('Three weeks of sample data added'); }}>Add three weeks of sample data to explore</button>}
         </div>
       </div>
 
+      <BackupPanel simple />
+
+      {deviceRole !== 'parent' && parentDoor}
+
       <div className="card">
-        <div className="small muted">{APP_NAME} {APP_VERSION}. Built for {athlete.firstName}, born {athlete.birthYear}. Works offline; everything is stored on this phone. Not medical advice.</div>
-        {mode === 'parent' && <button className="btn ghost sm mt" style={{ color: 'var(--danger)' }} onClick={() => setResetOpen(true)}>Erase everything on this phone</button>}
+        <div className="small muted">{APP_NAME} {APP_VERSION}. Set up for {athlete.firstName}. Works offline; everything is stored on this phone. Not medical advice.</div>
       </div>
 
       {pinOpen && (
-        <Sheet title="Parent PIN" onClose={() => { setPinOpen(false); setWrong(false); }} footer={<><button className="btn" onClick={() => setPinOpen(false)}>Cancel</button><button className="btn primary" disabled={pin.length < 4} onClick={tryPin}>Unlock</button></>}>
+        <Sheet title={`${parent}'s PIN`} onClose={() => { setPinOpen(false); setWrong(false); }} footer={<><button className="btn" onClick={() => setPinOpen(false)}>Cancel</button><button className="btn primary" disabled={pin.length < 4} onClick={tryPin}>Unlock</button></>}>
           <input className="input" type="password" inputMode="numeric" autoFocus value={pin} onChange={(e) => setPin(e.target.value.replace(/\D/g, '').slice(0, 8))} onKeyDown={(e) => { if (e.key === 'Enter') tryPin(); }} style={{ fontSize: 28, textAlign: 'center', letterSpacing: 8 }} aria-label="PIN" />
           {wrong && <div className="small mt" style={{ color: 'var(--danger)' }}>That is not it.</div>}
-          <p className="small muted mt">Parent mode locks itself again after ten minutes in the background.</p>
+          <p className="small muted mt">The parent view locks itself again after ten minutes in the background.</p>
         </Sheet>
       )}
-      {resetOpen && <Confirm title="Erase everything?" text="Every workout, note and setting on this phone will be deleted. Make a backup first. This cannot be undone." yesLabel="Erase" danger onNo={() => setResetOpen(false)} onYes={async () => { const { clearAll } = await import('../../db/db'); await clearAll(); window.location.hash = '#/setup'; window.location.reload(); }} />}
       {toast.el}
     </div>
   );

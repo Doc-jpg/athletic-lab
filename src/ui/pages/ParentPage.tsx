@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { Link, Navigate } from 'react-router-dom';
-import { useAthlete, useCheckIns, useExercises, useFlags, useSessions, useSettings, useSportsLogs, useStatuses, useSupplements, useToday, fmtDate, timeAgo } from '../hooks';
+import { useAthlete, useCheckIns, useExercises, useFlags, useMeta, useSessions, useSettings, useSportsLogs, useStatuses, useSupplements, useToday, fmtDate, timeAgo } from '../hooks';
 import { useMode } from '../mode';
-import { db, saveSettings, setExerciseStatus, setParentPin, updateAthlete, saveExercise } from '../../db/db';
+import { db, saveSettings, setExerciseStatus, setParentPin, updateAthlete, clearAll } from '../../db/db';
+import { loadDemo, removeDemo } from '../../data/demo';
 import { addDays, newId, nowIso, type Load, type SupplementRecord } from '../../engine/types';
 import { LOAD_WORDS, AREA_WORDS } from '../../data/exercises';
 import { Sheet, Confirm, useToast } from '../components/Sheet';
@@ -30,7 +31,9 @@ export function ParentPage() {
   const [tab, setTab] = useState<'week' | 'exercises' | 'settings'>('week');
   const [pinNew, setPinNew] = useState('');
   const [supp, setSupp] = useState<Partial<SupplementRecord> | null>(null);
-  const [disableAll, setDisableAll] = useState<string | null>(null);
+  const [resetOpen, setResetOpen] = useState(false);
+  const demoLoaded = useMeta('demoLoaded') === true;
+  const deviceRole = useMeta('deviceRole');
   if (mode !== 'parent') return <Navigate to="/settings" replace />;
   if (!athlete) return null;
   const name = athlete.firstName;
@@ -63,7 +66,8 @@ export function ParentPage() {
 
   return (
     <div className="col">
-      <div className="row between"><h1>Parent dashboard</h1><Link className="btn sm" to="/settings">Settings</Link></div>
+      <div className="row between"><h1>Parent view</h1><Link className="btn sm" to="/settings">Back</Link></div>
+      {deviceRole === 'parent' && <div className="banner info small">This is the parent copy. {name} checks in and trains on his own phone; his records arrive here as a parent pack (Settings tab, Backup, Restore or merge).</div>}
       <div className="btn-grid cols-3">
         <button className={`btn ${tab === 'week' ? 'primary' : ''}`} onClick={() => setTab('week')}>This week</button>
         <button className={`btn ${tab === 'exercises' ? 'primary' : ''}`} onClick={() => setTab('exercises')}>Exercises</button>
@@ -136,8 +140,7 @@ export function ParentPage() {
               </div>
             );
           })}
-          <p className="small muted">Beginner bodyweight exercises are always on. To take one out anyway, open it from Workouts and use "Turn off" here after it appears, or ask and it can be archived.</p>
-          {disableAll && <Confirm title="Turn off?" text="" onNo={() => setDisableAll(null)} onYes={() => setDisableAll(null)} />}
+          <p className="small muted">Beginner bodyweight exercises are always on and are not listed here.</p>
         </>
       )}
 
@@ -175,7 +178,17 @@ export function ParentPage() {
             <p className="small muted mt">Forgot it later? There is no reset without erasing the app; keep a backup.</p>
           </div>
 
-          <BackupPanel parentMode />
+          <BackupPanel />
+
+          <div className="card">
+            <h3>Sample data and starting over</h3>
+            <p className="small muted">Three weeks of made-up history, marked as sample, to see what Progress and the parent view look like before {name} has any. Remove it before his first real session.</p>
+            <div className="col mt">
+              {demoLoaded ? <button className="btn block" onClick={async () => { const n = await removeDemo(db); toast.show(`Removed ${n} sample records`); }}>Remove the sample data</button> : <button className="btn block" onClick={async () => { await loadDemo(db); toast.show('Three weeks of sample data added'); }}>Add three weeks of sample data</button>}
+              <button className="btn ghost sm" style={{ color: 'var(--danger)' }} onClick={() => setResetOpen(true)}>Erase everything on this phone</button>
+            </div>
+          </div>
+          {resetOpen && <Confirm title="Erase everything?" text="Every workout, note and setting on this phone will be deleted, including the PIN. Make a backup first. This cannot be undone." yesLabel="Erase" danger onNo={() => setResetOpen(false)} onYes={async () => { await clearAll(); window.location.hash = '#/setup'; window.location.reload(); }} />}
         </>
       )}
 

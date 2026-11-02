@@ -42,7 +42,7 @@ export function ExercisePage() {
           {e.harder && all.get(e.harder) && <Link className="item tappable" to={`/exercises/${e.harder}`}><div className="grow"><div className="title">{all.get(e.harder)!.name}</div><div className="sub">Harder{all.get(e.harder)!.needsFormCheck ? ' · needs a parent form check first' : ''}</div></div><span className="chev">›</span></Link>}
           {e.substitutes.map((id) => all.get(id) && <Link key={id} className="item tappable" to={`/exercises/${id}`}><div className="grow"><div className="title">{all.get(id)!.name}</div><div className="sub">Can stand in for it</div></div><span className="chev">›</span></Link>)}
         </div>
-        {e.loads.length > 1 && <p className="small muted mt">Can be done with {e.loads.map((l) => LOAD_WORDS[l].toLowerCase()).join(' or ')}. {status?.approvedLoads?.length ? `Approved: ${status.approvedLoads.map((l) => LOAD_WORDS[l]).join(', ')}.` : 'No weight approved yet; body weight until a parent checks the form and approves it in Parent mode.'}</p>}
+        {e.loads.length > 1 && <p className="small muted mt">Can be done with {e.loads.map((l) => LOAD_WORDS[l].toLowerCase()).join(' or ')}. {status?.approvedLoads?.length ? `Approved: ${status.approvedLoads.map((l) => LOAD_WORDS[l]).join(', ')}.` : 'No weight approved yet; body weight until a parent checks the form and approves it in the parent view.'}</p>}
         {e.needsFormCheck && <p className="small">{status?.formCheckedAt ? `Form checked by ${status.formCheckedBy ?? 'a parent'} on ${fmtDate(status.formCheckedAt.slice(0, 10))}.` : 'Needs an adult to watch the first few reps and check the form before it goes into a session.'}</p>}
       </div>
       <div className="card">

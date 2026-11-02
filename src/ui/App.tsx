@@ -53,7 +53,7 @@ function Shell() {
         </nav>
       )}
       <main className="app-main">
-        {mode === 'parent' && !inWorkout && <div className="banner info row between"><span>Parent mode</span><ParentExit /></div>}
+        {mode === 'parent' && !inWorkout && <div className="banner info row between"><span>Parent view</span><ParentExit /></div>}
         <ErrorBoundary>
           <Routes>
             <Route path="/" element={<Navigate to="/today" replace />} />

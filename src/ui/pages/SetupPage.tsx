@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createAthlete, saveSettings, setParentPin, seedLibrary, db } from '../../db/db';
-import { loadDemo } from '../../data/demo';
 import { useAthlete } from '../hooks';
 import { useTour } from '../components/Tour';
 import type { ThemeChoice } from '../../engine/types';
@@ -9,42 +8,57 @@ import { nowIso } from '../../engine/types';
 import { APP_NAME } from '../version';
 
 /**
- * First run: three short steps. Nothing else is required to start. The parent PIN defaults to the
- * one Deren chose and can be changed in Parent mode.
+ * First run. Two people use this app and setup is the parent's part: whose phone this is, the
+ * athlete's name and birth year, the parent's name, and a PIN typed twice and never shown again.
+ * On the athlete's phone a hand-off screen then speaks to the kid (pick a look, take the tour).
+ * On the parent's phone it lands in the parent dashboard with the "merge a pack" instructions.
  */
-const DEFAULT_PARENT_PIN = '7101';
+type Role = 'athlete' | 'parent';
 
 export function SetupPage() {
   const nav = useNavigate();
   const athlete = useAthlete();
   const tour = useTour();
-  const [step, setStep] = useState(0);
-  const [name, setName] = useState('Eli');
-  const [birthYear, setBirthYear] = useState('2014');
+  const [step, setStep] = useState<'who' | 'parent' | 'handoff' | 'parentdone'>('who');
+  const [role, setRole] = useState<Role>('athlete');
+  const [name, setName] = useState('');
+  const [birthYear, setBirthYear] = useState('');
   const [sports, setSports] = useState<string[]>(['baseball', 'basketball']);
+  const [parentName, setParentName] = useState('');
+  const [pin, setPin] = useState('');
+  const [pin2, setPin2] = useState('');
   const [theme, setTheme] = useState<ThemeChoice>('play');
-  const [parentName, setParentName] = useState('Dad');
   const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState('');
 
   const toggleSport = (s: string) => setSports((x) => (x.includes(s) ? x.filter((y) => y !== s) : [...x, s]));
+  const year = parseInt(birthYear, 10);
+  const yearOk = year >= 2005 && year <= new Date().getFullYear() - 5;
+  const pinOk = pin.length >= 4 && pin === pin2;
 
-  const finish = async (withDemo: boolean) => {
+  const finishParentPart = async () => {
+    if (!name.trim()) { setErr("The athlete's first name is needed."); return; }
+    if (!yearOk) { setErr('Birth year looks off.'); return; }
+    if (!parentName.trim()) { setErr('What should the app call you?'); return; }
+    if (!pinOk) { setErr(pin.length < 4 ? 'The PIN needs at least 4 digits.' : 'The two PINs do not match.'); return; }
+    setErr('');
     setBusy(true);
     await seedLibrary();
-    await createAthlete({ firstName: name.trim() || 'Eli', birthYear: parseInt(birthYear, 10) || 2014, sports, theme });
-    await saveSettings({ parentName: parentName.trim() || 'Parent', createdAt: nowIso() });
-    const s = await db.settings.get('settings');
-    if (!s?.parentPinHash) await setParentPin(DEFAULT_PARENT_PIN);
-    if (withDemo) await loadDemo(db);
+    await createAthlete({ firstName: name.trim(), birthYear: year, sports, theme: 'play' });
+    await saveSettings({ parentName: parentName.trim(), createdAt: nowIso() });
+    await setParentPin(pin);
+    await db.meta.put({ key: 'deviceRole', value: role });
+    setPin('');
+    setPin2('');
     setBusy(false);
-    setStep(3);
+    setStep(role === 'athlete' ? 'handoff' : 'parentdone');
   };
 
-  if (athlete && step < 3) {
+  if (athlete && (step === 'who' || step === 'parent')) {
     return (
       <div className="col">
         <div className="hero"><h1>{APP_NAME}</h1><div className="sub">Already set up on this phone.</div></div>
-        <button className="btn primary lg block" onClick={() => nav('/today')}>Go to Today</button>
+        <button className="btn primary lg block" onClick={() => nav('/today')}>Open the app</button>
       </div>
     );
   }
@@ -53,59 +67,74 @@ export function SetupPage() {
     <div className="col">
       <div className="hero">
         <h1>{APP_NAME}</h1>
-        <div className="sub">Strength, mobility, athleticism and good habits. Built for one athlete, adjusted to every day.</div>
+        <div className="sub">Strength, mobility, athletic movement and good habits for one young athlete, adjusted to every day.</div>
       </div>
-      {step === 0 && (
+
+      {step === 'who' && (
         <div className="card">
-          <h3>Step 1 of 3 · Who is training</h3>
-          <div className="field"><label>First name</label><input className="input" value={name} onChange={(e) => setName(e.target.value)} placeholder="Eli" /></div>
-          <div className="field"><label>Birth year</label><input className="input" inputMode="numeric" value={birthYear} onChange={(e) => setBirthYear(e.target.value.replace(/\D/g, '').slice(0, 4))} /></div>
+          <h3>For the parent · whose phone is this?</h3>
+          <p className="small muted">Setup takes two minutes and is the parent's part. After it, the app talks to your athlete.</p>
+          <div className="col mt">
+            <button className={`btn lg block ${role === 'athlete' ? 'primary' : ''}`} onClick={() => setRole('athlete')}>My athlete's phone (the main one)</button>
+            <button className={`btn lg block ${role === 'parent' ? 'primary' : ''}`} onClick={() => setRole('parent')}>My own phone (a parent copy)</button>
+          </div>
+          <p className="small muted mt">{role === 'athlete' ? 'He checks in and trains on this phone. You get a PIN-protected parent view on it too.' : 'A parent copy shows the parent dashboard and receives his records as a file he sends you. Set up his phone first.'}</p>
+          <button className="btn primary lg block mt" onClick={() => setStep('parent')}>Next</button>
+        </div>
+      )}
+
+      {step === 'parent' && (
+        <div className="card">
+          <h3>For the parent · the athlete and you</h3>
+          <div className="field"><label>Athlete's first name</label><input className="input" value={name} onChange={(e) => setName(e.target.value)} placeholder="First name" autoFocus /></div>
+          <div className="field"><label>Athlete's birth year</label><input className="input" inputMode="numeric" value={birthYear} onChange={(e) => setBirthYear(e.target.value.replace(/\D/g, '').slice(0, 4))} placeholder="2014" /></div>
           <div className="field"><label>Sports this year</label>
             <div className="chips">
               {['baseball', 'basketball', 'football', 'soccer', 'swimming', 'running', 'other'].map((s) => <button key={s} className={`chip ${sports.includes(s) ? 'on' : ''}`} onClick={() => toggleSport(s)}>{s[0].toUpperCase() + s.slice(1)}</button>)}
             </div>
           </div>
-          <button className="btn primary lg block" onClick={() => setStep(1)}>Next: the look</button>
+          <div className="field"><label>What the app should call you</label><input className="input" value={parentName} onChange={(e) => setParentName(e.target.value)} placeholder="Dad" /></div>
+          <div className="inline-fields">
+            <div className="field"><label>Parent PIN (4 to 8 digits)</label><input className="input" type="password" inputMode="numeric" value={pin} onChange={(e) => setPin(e.target.value.replace(/\D/g, '').slice(0, 8))} aria-label="Parent PIN" /></div>
+            <div className="field"><label>Type it again</label><input className="input" type="password" inputMode="numeric" value={pin2} onChange={(e) => setPin2(e.target.value.replace(/\D/g, '').slice(0, 8))} aria-label="Parent PIN again" /></div>
+          </div>
+          <p className="small muted">The PIN opens the parent view. It is never shown on screen again, so pick one you will remember. Change it any time in the parent view.</p>
+          <div className="banner warn small">
+            This app is a guide for a healthy kid, not medical advice. Be nearby for every session with a weight and the first run of any new movement. Anything that hurts: stop, and he tells you.
+          </div>
+          {err && <div className="banner danger small">{err}</div>}
+          <div className="row mt"><button className="btn" onClick={() => setStep('who')}>Back</button><button className="btn primary grow" disabled={busy} onClick={finishParentPart}>{role === 'athlete' ? "Done. Hand the phone over" : 'Finish'}</button></div>
         </div>
       )}
-      {step === 1 && (
+
+      {step === 'handoff' && (
         <div className="card">
-          <h3>Step 2 of 3 · Pick a look</h3>
-          <p className="small muted">You can change this any time in Settings.</p>
+          <h2>Hey {name}, this is yours</h2>
+          <p className="small muted">Pick a look. You can change it later in Settings.</p>
           <div className="btn-grid cols-3">
             {([['play', 'Playful'], ['minimal', 'Minimal'], ['pro', 'Pro sports']] as Array<[ThemeChoice, string]>).map(([k, label]) => (
-              <button key={k} className={`theme-swatch ${theme === k ? 'on' : ''}`} onClick={() => { setTheme(k); document.documentElement.setAttribute('data-theme', k); }}>{label}</button>
+              <button key={k} className={`theme-swatch ${theme === k ? 'on' : ''}`} onClick={async () => { setTheme(k); document.documentElement.setAttribute('data-theme', k); const a = await db.athlete.get('athlete'); if (a) await db.athlete.put({ ...a, theme: k }); }}>{label}</button>
             ))}
           </div>
-          <div className="row mt"><button className="btn" onClick={() => setStep(0)}>Back</button><button className="btn primary grow" onClick={() => setStep(2)}>Next: the parent</button></div>
-        </div>
-      )}
-      {step === 2 && (
-        <div className="card">
-          <h3>Step 3 of 3 · The parent</h3>
-          <div className="field"><label>What to call the parent</label><input className="input" value={parentName} onChange={(e) => setParentName(e.target.value)} placeholder="Dad" /></div>
-          <div className="banner info small">
-            Parent mode is behind a 4-digit PIN (starts as {DEFAULT_PARENT_PIN}; change it in Parent mode). It can see completed workouts, sports days, recovery days, progress and safety alerts. It cannot see notes marked private. {name || 'Eli'} can read that same list any time under Settings, "What a parent can see".
-          </div>
-          <div className="banner warn small">
-            This app is a guide for a healthy kid, not medical advice. A parent is nearby for every session with a weight and the first run of any new movement. Anything that hurts: stop, tell a parent.
-          </div>
-          <div className="col">
-            <button className="btn primary lg block" disabled={busy} onClick={() => finish(false)}>Finish setup</button>
-            <button className="btn block" disabled={busy} onClick={() => finish(true)}>Finish with three weeks of sample data to explore</button>
-            <div className="small muted center">Sample data is marked and can be removed in one tap from Settings.</div>
-            <button className="btn ghost sm" onClick={() => setStep(1)}>Back</button>
-          </div>
-        </div>
-      )}
-      {step === 3 && (
-        <div className="card">
-          <h2>You are set</h2>
-          <p className="small muted">Today starts with a check-in. The tour takes a minute and shows the five screens.</p>
-          <div className="col">
+          <p className="small mt">Every day starts with a quick check-in: what sports you did and how you feel. Then the app picks the right kind of day and shows you the workout one move at a time. Skipping is always allowed.</p>
+          <p className="small">{parentName || 'Your parent'} has a PIN-protected view of your workouts, sports days and progress. Settings shows exactly what that includes; notes you mark private stay private.</p>
+          <div className="col mt">
             <button className="btn primary lg block" onClick={() => { nav('/today'); setTimeout(tour.start, 200); }}>Take the one-minute tour</button>
-            <button className="btn block" onClick={() => nav('/today')}>Go to Today</button>
+            <button className="btn block" onClick={() => nav('/today')}>Skip the tour</button>
           </div>
+        </div>
+      )}
+
+      {step === 'parentdone' && (
+        <div className="card">
+          <h2>Parent copy ready</h2>
+          <p className="small">This phone shows the parent dashboard. {name}'s check-ins and workouts happen on his phone; they reach this one as a file:</p>
+          <ol className="step-list small">
+            <li>On {name}'s phone: Settings, open the parent view with your PIN, Backup, <strong>Make a parent pack</strong>, AirDrop or Message it to yourself.</li>
+            <li>On this phone: Settings, parent view, Backup, <strong>Restore or merge</strong>, pick the file, <strong>Merge</strong>.</li>
+          </ol>
+          <p className="small muted">Approvals you make here (a form check, a 5 lb weight) travel back the same way: Back up everything here, Merge on his phone. Merging never overwrites newer records.</p>
+          <button className="btn primary lg block mt" onClick={() => nav('/settings')}>Open Settings</button>
         </div>
       )}
     </div>
