@@ -95,8 +95,33 @@ export interface Settings {
   visibilityNoticeSeenAt?: Iso;
   demoLoaded?: boolean;
   lastBackupAt?: Iso;
+  /** Automatic sync with the other phone through the family key. Per phone; never backed up into a pack. */
+  sync?: SyncState;
   createdAt?: Iso;
   updatedAt?: Iso;
+}
+
+export interface SyncState {
+  /** The family secret (a 20-character code). Both phones hold it; the server only ever sees its hash. */
+  secret: string;
+  /** sha256(secret), the row key on the server. */
+  familyId: string;
+  enabled: boolean;
+  device: string;
+  /** Highest local stamp pushed so far. */
+  lastPush?: string;
+  /** Highest server timestamp pulled so far. */
+  lastPullTs?: string;
+  lastSyncAt?: Iso;
+  lastError?: string;
+}
+
+/** A deleted record, kept so the deletion reaches the other phone. */
+export interface Tombstone {
+  key: string; // `${tbl}:${id}`
+  tbl: string;
+  id: string;
+  ts: Iso;
 }
 
 export const DEFAULT_SETTINGS: Settings = {

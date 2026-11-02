@@ -12,11 +12,13 @@ import { SettingsPage } from './pages/SettingsPage';
 import { HelpPage } from './pages/HelpPage';
 import { SetupPage } from './pages/SetupPage';
 import { SessionPage } from './pages/SessionPage';
+import { JoinPage } from './pages/JoinPage';
+import { startSyncLoop } from '../io/sync';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { TourProvider } from './components/Tour';
 import { ModeProvider, useMode } from './mode';
 import { requestPersistence, seedLibrary } from '../db/db';
-import { useAthlete } from './hooks';
+import { useAthlete, useMeta } from './hooks';
 
 const Icon = {
   today: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></svg>,
@@ -30,16 +32,19 @@ function Shell() {
   const athlete = useAthlete();
   const loc = useLocation();
   const { mode } = useMode();
+  const deviceRole = useMeta('deviceRole');
   useEffect(() => {
     requestPersistence();
     seedLibrary().catch(() => undefined);
+    return startSyncLoop();
   }, []);
   useEffect(() => {
     const root = document.documentElement;
     if (athlete?.theme) root.setAttribute('data-theme', athlete.theme);
   }, [athlete?.theme]);
   if (athlete === null) return <div className="empty">Opening…</div>;
-  if (!athlete && loc.pathname !== '/setup' && loc.pathname !== '/help') return <Navigate to="/setup" replace />;
+  if (!athlete && deviceRole !== 'parent' && loc.pathname !== '/setup' && loc.pathname !== '/help' && loc.pathname !== '/join') return <Navigate to="/setup" replace />;
+  if (!athlete && deviceRole === 'parent' && !['/settings', '/parent', '/help', '/join'].includes(loc.pathname)) return <Navigate to="/settings" replace />;
   const inWorkout = /^\/workout\//.test(loc.pathname);
   return (
     <div className="app">
@@ -58,6 +63,7 @@ function Shell() {
           <Routes>
             <Route path="/" element={<Navigate to="/today" replace />} />
             <Route path="/setup" element={<SetupPage />} />
+            <Route path="/join" element={<JoinPage />} />
             <Route path="/today" element={<TodayPage />} />
             <Route path="/workouts" element={<WorkoutsPage />} />
             <Route path="/workout/:sessionId" element={<WorkoutPage />} />

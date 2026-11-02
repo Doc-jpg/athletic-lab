@@ -50,6 +50,9 @@ ZIP of one JSON file per table plus `manifest.json` (format `athletic-lab-backup
 
 vite-plugin-pwa precaches the shell (about 580 KB). Data is in IndexedDB. Live workout state (index, paused, elapsed) is written to the session on every change. Installed home-screen apps count as safe storage; a browser tab gets an install prompt. A home-screen icon is not a backup, and the Settings copy says so.
 
-## What needs a server (not built)
+## Sync (src/io/sync.ts, docs/sync-schema.sql)
 
-Automatic sync between phones, push notifications in the background, and remote parent access without a file. The data model already merges by record, which is the hard part; the server, accounts and roles are the remaining work (Phase 2 of the roadmap). Until then a parent pack by AirDrop, Messages or Mail is the sync, and the app says "remote parent access has not been enabled" in plain words on the Backup card.
+Automatic two-way sync through a free Supabase project. One table `records(family_id, tbl, id, stamp, data, deleted, device, server_ts)`; `family_id` is sha256 of the family code; every request carries the code in `x-family-key` and the row-level policy compares the hash. A trigger refuses an older stamp and sets `server_ts` on every accepted write. Push: every local record with stamp > lastPush (plus tombstones), upserted in batches; pull: rows with server_ts > lastPullTs, merged with `mergeRecord`; a pull that merged anything pushes again. Triggers: open, foreground, online, two seconds after a write, every two minutes. Not synced: private journal entries, settings, meta, untouched library rows. Without a family code the app is a single-phone app.
+
+## Still needing a server
+Background push notifications. Everything else the master prompt listed under "requires infrastructure" is in.

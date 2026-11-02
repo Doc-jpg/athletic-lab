@@ -2,6 +2,20 @@
 
 Newest first. Append here; this is where the next session starts.
 
+## 2026-11-02 (afternoon), automatic sync (Deren: "I want whatever he does to auto send")
+
+Deren refused the file-based parent pack: he does not want to get on Eli's phone, and Eli should never have to submit anything. He asked that whatever Eli does upload on its own.
+
+- **Design:** a family code made once at parent setup on the athlete's phone (20 characters, no confusable letters), carried to the parent's phone by a link (`#/join?k=CODE`, the code in the hash fragment so it never hits a server log) or typed. Both phones push changed records and pull the other's, keyed by the code; the server (a free Supabase project, organization "Flesher Family", project "athletic-lab", nothing to do with AiroDental) holds one table of records with row-level security on the hash of the code sent in a header. The server never stores the code. Tested from the container that one family's key cannot read or write another's rows.
+- **Merge rules are the backup's merge rules** (`mergeRecord` extracted from backup.ts): newer record wins, sessions by finished-status rank, athlete goals union by id. The server also refuses an older stamp. After a pull that merged something, the phone pushes again at once so the union reaches the other phone on its next sync (found by the goal-union test).
+- **What never syncs:** private journal entries, settings (PINs, sync state), meta, untouched library rows. Journal deletions travel as tombstones (schema v2 table).
+- **When it syncs:** app open, foreground, back online, two seconds after any write (`noteChange` event from the db helpers), every two minutes while open. iPhone web apps do not run in the background; "automatic" means on the next open. A hash-only navigation is not an open (learned in the acceptance script); a reload or a return to the foreground is.
+- **Setup flow now:** athlete phone → parent part → "Send myself the parent link" → hand-off. Parent phone → open the link (name, PIN, Connect) or "My own phone" + code. A parent phone that has not yet received the athlete's records shows a waiting card instead of the setup wizard.
+- **Parent packs stay** as the no-signal fallback and as a backup; nothing requires them any more.
+- **Free Supabase projects pause after a week of no traffic:** a scheduled task pings the records endpoint every three days. If it pauses anyway, the dashboard restores it in one click.
+- Verified: 7 sync tests on a fake server with the same rules plus one live round trip against the real project (`LIVE_SYNC=1 npm test`); the Playwright walk now sets up two simulated phones, syncs a session from Eli's to Dad's and an approval from Dad's to Eli's through the live server.
+- Credentials: the publishable key is in `src/sync-config.ts` on purpose (it is public by design; RLS is the lock). No secret key is anywhere in the repo or on the laptop.
+
 ## 2026-11-02 (afternoon), audience fix (Deren: "it felt confused as to who was the target audience")
 
 Deren opened the live site and the setup screen talked to Eli and to him at once, printed the parent PIN on screen, and asked "who is using it" under the name "Eli's Athletic Lab". He asked for the flow to be deliberate: who sets it up, and how Eli gets it.

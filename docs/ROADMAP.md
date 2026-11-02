@@ -11,9 +11,9 @@ Separate installable PWA; readiness check-in and engine with multi-day workload,
 5. Custom exercises and template editing in the UI (the data model supports both; the screens do not exist yet).
 
 ## Phase 2: parent experience
-- Secure sync between phones with conflict review (a small server with accounts and roles; the merge rules already exist).
-- Remote parent access without a file.
-- Push notifications where supported, with the same quiet hours.
+- Done 2026-11-02: automatic sync between phones (family code, Supabase, merge by record) and remote parent access without a file.
+- Push notifications where supported, with the same quiet hours (needs a push server).
+- Conflict review screen (today conflicts resolve by rule silently; a log of what was merged would help).
 - Parent-editable reminders per day of the week.
 
 ## Phase 3: long-term intelligence

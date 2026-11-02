@@ -1,39 +1,40 @@
 # Who sets it up, and how Eli gets it
 
-Two people use this app. **Setup is the parent's job, done once on Eli's phone.** After it, the app talks only to Eli. The parent has a PIN-protected view on that same phone, and can also install a parent copy on his own phone.
+Two people use this app. **Setup is the parent's job, done once on Eli's phone.** After it, the app talks only to Eli. Everything he does shows up on the parent's phone on its own; nothing is ever sent by hand.
 
 ## 1. Eli's phone (the parent does this, two minutes)
 1. On Eli's iPhone, open Safari and go to **https://doc-jpg.github.io/athletic-lab/**
 2. Tap **Share** (the square with the arrow), then **Add to Home Screen**, then **Add**. The icon is a navy square with an orange bolt, named "Athletic Lab".
-3. Open it from the home screen (online, this once).
-4. The first screen says it is for the parent. Choose **My athlete's phone**, then enter his first name and birth year, tick his sports, type what the app should call you ("Dad"), and type a PIN twice. The PIN is never shown on screen again.
-5. Tap **Done. Hand the phone over.** The next screen is Eli's: he picks a look and takes the one-minute tour (or skips it).
+3. Open it from the home screen (online).
+4. The first screen says it is for the parent. Choose **My athlete's phone**, enter his first name and birth year, tick his sports, type what the app should call you ("Dad"), and type a PIN twice. The PIN is never shown on screen again.
+5. The next screen makes the family link. Tap **Send myself the parent link** and Message or AirDrop it to yourself (or note the 20-character code). Then **Done. Hand the phone over.**
+6. Eli's screen: he picks a look and takes the one-minute tour (or skips it).
 
-From then on Eli opens the app, checks in, and trains. Nothing on his screens mentions the PIN or parent settings beyond the "What Dad can see" card.
+From then on Eli opens the app, checks in, and trains. The only parent thing on his screens is the "What Dad can see" card and a line saying his records go to Dad's phone.
 
-Android: open the address in Chrome, menu, **Install app**. Same steps after that.
+## 2. Your phone (one minute)
+1. Install the same address the same way (Share, Add to Home Screen).
+2. Open the link you sent yourself. It lands on "Parent link": type what the app should call you and a PIN, tap **Connect this phone**. Done. (Or open the app, choose **My own phone**, and type the code.)
+3. Settings on your phone has the parent door at the top; the parent view shows his week, alerts, approvals and settings.
 
-## 2. The parent view on Eli's phone
-Settings (gear on Today) → **Open the parent view** → PIN. It locks again after ten minutes in the background.
-- **This week:** alerts (pain, sick, dizzy, stopped workout, tournament day, no rest day), the last seven days, totals.
-- **Exercises:** mark a weighted exercise's form as checked after watching the first reps; then approve 5 lb (and separately 10 lb) for that exercise. Until then it stays body weight and the row is swapped for wall slides. "Turn off" takes an exercise out of sessions.
-- **Settings:** strength days per week (2 or 3), growth-spurt mode, program restart, daily message and quiet hours, device notifications (only while the app is open), clinician-recommended supplement record (off by default; the app never suggests one), parent name and PIN, backup, parent pack, restore, sample data, erase.
+## How the sync works
+- Each phone sends what changed and fetches what the other sent whenever the app is opened with a signal, two seconds after any change, when it comes back online, and every two minutes while open. iPhone web apps cannot run in the background, so his evening workout reaches your phone the next time you open the app (it syncs on open).
+- Merging is per record and never overwrites a newer copy; both phones adding a goal keeps both goals.
+- Never synced: journal notes marked private, PINs, settings. The server holds only the hash of the family code and only answers requests that carry the code.
+- The parent view, Settings tab, "Linked phones" shows the status, a Sync now button, the link and code to connect another phone, and Disconnect.
+- The cloud side is a free Supabase project (organization "Flesher Family", project "athletic-lab"), separate from anything AiroDental. Free projects pause after a week with no traffic; a scheduled task pings it every three days so that does not happen. If it ever does pause, the Supabase dashboard restores it with one click and the phones catch up.
 
-## 3. A parent copy on Deren's phone (optional)
-Install the same address on your own phone, open it, choose **My own phone (a parent copy)**, enter the same details and a PIN. It lands on the parent instructions and puts the parent door at the top of Settings. Records move by file:
-- On Eli's phone: parent view → Settings tab → **Make a parent pack** → AirDrop or Message it to yourself. The pack has no private notes and no PINs.
-- On your phone: parent view → Settings tab → **Restore or merge** → pick the file → **Merge**. Merging the same pack twice changes nothing; a newer record on your phone is never overwritten by an older one.
-- Approvals made on your phone travel back the same way: **Back up everything** on your phone, **Merge** on Eli's.
-
-There is no server, so this is the sync for now. Remote parent access without a file is Phase 2.
+## The parent view on Eli's phone
+Settings (gear on Today) → **Open the parent view** → PIN. It locks again after ten minutes in the background. Tabs: This week (alerts, last seven days, totals), Exercises (form checks, 5 lb and 10 lb approvals, turn off), Settings (linked phones, strength days, growth-spurt mode, reminders, clinician-only supplement record, PIN and name, backup, sample data, erase).
 
 ## Backups (every few weeks)
-Eli's Settings has **Back up everything** (share the file to Files or iCloud Drive). The parent view has the same plus restore. Restoring on a new phone: install, do the parent setup (new PIN), parent view → Restore → **Replace everything**.
+Sync is not a backup. Eli's Settings has **Back up everything** (share the file to Files or iCloud Drive); the parent view has the same plus restore and parent packs. Restoring on a new phone: install, parent setup (new PIN), parent view → Restore → **Replace everything**, then reconnect with the family code from the other phone.
 
 ## Notifications
-In-app messages always work (one a day on Today, not in quiet hours). Device notifications are optional, need iOS permission, and only fire while the app is open. The app does not promise background alerts.
+In-app messages always work (one a day on Today, not in quiet hours). Device notifications are optional, need iOS permission, and only fire while the app is open.
 
 ## If something goes wrong
+- "Last try failed" under Linked phones: usually no signal; it retries on its own. If it says the project is paused, open the Supabase dashboard and restore it.
 - A screen shows "Something went wrong": tap Go to Today; data is untouched.
-- Forgot the PIN: there is no reset without erasing the app (the parent view's Erase, or delete and reinstall). Keep a backup; restoring brings everything back after a fresh setup with a new PIN.
+- Forgot the PIN: there is no reset without erasing the app (the parent view's Erase, or delete and reinstall). Reconnect with the family code from the other phone and everything comes back from the cloud copy.
 - The app says "Running in a browser tab": it is not on the home screen; do step 2 so the browser cannot clear its storage.

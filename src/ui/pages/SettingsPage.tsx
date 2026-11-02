@@ -4,6 +4,7 @@ import { useAthlete, useMeta, useSettings } from '../hooks';
 import { useMode } from '../mode';
 import { addGoal, setGoalStatus, updateAthlete, saveSettings } from '../../db/db';
 import { BackupPanel } from '../components/BackupPanel';
+import { SyncCard } from '../components/SyncCard';
 import { Sheet, useToast } from '../components/Sheet';
 import { useTour } from '../components/Tour';
 import type { ThemeChoice } from '../../engine/types';
@@ -26,7 +27,7 @@ export function VisibilityCard() {
         <li>Journal notes that are not marked private</li>
         <li>Safety alerts: pain, feeling sick, dizziness, a stopped workout, a tournament day, or a week with no rest day</li>
       </ul>
-      <p className="small"><strong>Not shown:</strong> journal notes marked private. There is no hidden tracking; this list is the whole list. {parent} can also approve weights, turn exercises on or off, set how many strength days a week, and manage reminders.</p>
+      <p className="small">{settings.sync?.enabled ? `All of that goes to ${parent}'s phone on its own whenever this phone has a signal, so nobody has to send anything. ` : ''}<strong>Not shown:</strong> journal notes marked private. There is no hidden tracking; this list is the whole list. {parent} can also approve weights, turn exercises on or off, set how many strength days a week, and manage reminders.</p>
       {!settings.visibilityNoticeSeenAt && athlete && <button className="btn sm" onClick={() => saveSettings({ visibilityNoticeSeenAt: nowIso() })}>Got it</button>}
     </div>
   );
@@ -45,13 +46,29 @@ export function SettingsPage() {
   const [pin, setPin] = useState('');
   const [wrong, setWrong] = useState(false);
   const [goal, setGoal] = useState('');
-  if (!athlete) return null;
   const parent = settings.parentName ?? 'Parent';
   const tryPin = async () => {
     const ok = await enterParent(pin);
     setPin('');
     if (ok) { setPinOpen(false); setWrong(false); nav('/parent'); } else setWrong(true);
   };
+  if (!athlete && deviceRole === 'parent') {
+    return (
+      <div className="col">
+        <h1>Settings</h1>
+        <div className="card"><h3>Waiting for the athlete's phone</h3><p className="small">This phone is connected. His name and records show up here the first time his phone opens the app with a signal after setup. {settings.sync?.lastError ? `Last try: ${settings.sync.lastError}` : ''}</p></div>
+        <SyncCard full={mode === 'parent'} />
+        {mode === 'parent' ? <Link className="btn primary block" to="/parent">Open the parent view</Link> : <button className="btn block" onClick={() => setPinOpen(true)}>Open the parent view</button>}
+        {pinOpen && (
+          <Sheet title={`${parent}'s PIN`} onClose={() => { setPinOpen(false); setWrong(false); }} footer={<><button className="btn" onClick={() => setPinOpen(false)}>Cancel</button><button className="btn primary" disabled={pin.length < 4} onClick={tryPin}>Unlock</button></>}>
+            <input className="input" type="password" inputMode="numeric" autoFocus value={pin} onChange={(e) => setPin(e.target.value.replace(/\D/g, '').slice(0, 8))} onKeyDown={(e) => { if (e.key === 'Enter') tryPin(); }} style={{ fontSize: 28, textAlign: 'center', letterSpacing: 8 }} aria-label="PIN" />
+            {wrong && <div className="small mt" style={{ color: 'var(--danger)' }}>That is not it.</div>}
+          </Sheet>
+        )}
+      </div>
+    );
+  }
+  if (!athlete) return null;
   const parentDoor = (
     <div className="card">
       <h3>For {parent}</h3>
@@ -82,6 +99,7 @@ export function SettingsPage() {
       </div>
 
       <VisibilityCard />
+      <SyncCard full={false} />
 
       <div className="card">
         <h3>Learn the app</h3>

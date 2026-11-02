@@ -8,6 +8,7 @@ import { addDays, newId, nowIso, type Load, type SupplementRecord } from '../../
 import { LOAD_WORDS, AREA_WORDS } from '../../data/exercises';
 import { Sheet, Confirm, useToast } from '../components/Sheet';
 import { BackupPanel } from '../components/BackupPanel';
+import { SyncCard } from '../components/SyncCard';
 import { COLOR_WORDS, dayLoad } from '../../engine/readiness';
 import { SportRow } from './TodayPage';
 
@@ -35,8 +36,8 @@ export function ParentPage() {
   const demoLoaded = useMeta('demoLoaded') === true;
   const deviceRole = useMeta('deviceRole');
   if (mode !== 'parent') return <Navigate to="/settings" replace />;
-  if (!athlete) return null;
-  const name = athlete.firstName;
+  const name = athlete?.firstName ?? 'the athlete';
+  if (!athlete) return <div className="col"><div className="row between"><h1>Parent view</h1><Link className="btn sm" to="/settings">Back</Link></div><div className="card"><p className="small">Waiting for the athlete's phone to sync its first records.</p></div><SyncCard full /></div>;
 
   const weekStart = addDays(day, -6);
   const weekSessions = sessions.filter((s) => s.day >= weekStart && s.status !== 'planned');
@@ -67,7 +68,7 @@ export function ParentPage() {
   return (
     <div className="col">
       <div className="row between"><h1>Parent view</h1><Link className="btn sm" to="/settings">Back</Link></div>
-      {deviceRole === 'parent' && <div className="banner info small">This is the parent copy. {name} checks in and trains on his own phone; his records arrive here as a parent pack (Settings tab, Backup, Restore or merge).</div>}
+      {deviceRole === 'parent' && <div className="banner info small">This is the parent copy. {name} checks in and trains on his own phone; {settings.sync?.enabled ? 'his records arrive here on their own.' : 'his records arrive here as a parent pack (Settings tab, Backup, Restore or merge).'}</div>}
       <div className="btn-grid cols-3">
         <button className={`btn ${tab === 'week' ? 'primary' : ''}`} onClick={() => setTab('week')}>This week</button>
         <button className={`btn ${tab === 'exercises' ? 'primary' : ''}`} onClick={() => setTab('exercises')}>Exercises</button>
@@ -146,6 +147,7 @@ export function ParentPage() {
 
       {tab === 'settings' && (
         <>
+          <SyncCard full />
           <div className="card">
             <h3>Training</h3>
             <div className="switch"><div><strong>Strength days per week</strong><div className="small muted">Two or three, never on consecutive days. The app enforces 48 hours between them.</div></div><div className="row"><button className={`btn sm ${settings.strengthDaysPerWeek === 2 ? 'primary' : ''}`} onClick={() => saveSettings({ strengthDaysPerWeek: 2 })}>2</button><button className={`btn sm ${settings.strengthDaysPerWeek === 3 ? 'primary' : ''}`} onClick={() => saveSettings({ strengthDaysPerWeek: 3 })}>3</button></div></div>

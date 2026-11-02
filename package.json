@@ -1,7 +1,7 @@
 {
   "name": "athletic-lab",
   "private": true,
-  "version": "0.2.0",
+  "version": "0.3.0",
   "type": "module",
   "description": "Eli's Athletic Lab: a personal strength, mobility, athleticism and healthy-habits app for a young athlete, offline-first",
   "scripts": {

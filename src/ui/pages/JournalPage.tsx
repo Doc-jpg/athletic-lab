@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useJournal, useSessions, useToday, fmtDate } from '../hooks';
 import { useMode } from '../mode';
-import { addJournal, db } from '../../db/db';
+import { addJournal, deleteJournal } from '../../db/db';
 import { refreshRewards } from '../../engine/today';
 import { useToast, Confirm } from '../components/Sheet';
 import { nowIso } from '../../engine/types';
@@ -55,7 +55,7 @@ export function JournalPage() {
           })}
         </div>
       )}
-      {del && <Confirm title="Delete this note?" text="It will be gone from this phone." yesLabel="Delete" danger onNo={() => setDel(null)} onYes={async () => { await db.journal.delete(del); setDel(null); }} />}
+      {del && <Confirm title="Delete this note?" text="It will be gone from this phone." yesLabel="Delete" danger onNo={() => setDel(null)} onYes={async () => { await deleteJournal(del); setDel(null); }} />}
       {toast.el}
     </div>
   );

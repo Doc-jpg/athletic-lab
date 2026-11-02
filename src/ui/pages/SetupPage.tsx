@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createAthlete, saveSettings, setParentPin, seedLibrary, db } from '../../db/db';
+import { startFamily, joinFamily, familyLink, formatCode, deviceName, syncNow } from '../../io/sync';
+import { SYNC_AVAILABLE } from '../../sync-config';
+import { useToast } from '../components/Sheet';
 import { useAthlete } from '../hooks';
 import { useTour } from '../components/Tour';
 import type { ThemeChoice } from '../../engine/types';
@@ -19,7 +22,10 @@ export function SetupPage() {
   const nav = useNavigate();
   const athlete = useAthlete();
   const tour = useTour();
-  const [step, setStep] = useState<'who' | 'parent' | 'handoff' | 'parentdone'>('who');
+  const [step, setStep] = useState<'who' | 'parent' | 'link' | 'handoff' | 'parentdone' | 'join'>('who');
+  const [familySecret, setFamilySecret] = useState('');
+  const [code, setCode] = useState('');
+  const toast = useToast();
   const [role, setRole] = useState<Role>('athlete');
   const [name, setName] = useState('');
   const [birthYear, setBirthYear] = useState('');
@@ -50,8 +56,45 @@ export function SetupPage() {
     await db.meta.put({ key: 'deviceRole', value: role });
     setPin('');
     setPin2('');
+    if (role === 'athlete' && SYNC_AVAILABLE) {
+      const fam = await startFamily(deviceName());
+      setFamilySecret(fam.secret);
+      setBusy(false);
+      setStep('link');
+      return;
+    }
     setBusy(false);
     setStep(role === 'athlete' ? 'handoff' : 'parentdone');
+  };
+
+  const shareLink = async () => {
+    const url = familyLink(familySecret);
+    const nav2: any = navigator;
+    try {
+      if (nav2.share) { await nav2.share({ title: 'Athletic Lab parent link', text: `Open this on your phone to get ${name.trim() || 'the athlete'}'s Athletic Lab parent view: ${url}` }); return; }
+    } catch (e: any) { if (e?.name === 'AbortError') return; }
+    try { await navigator.clipboard.writeText(url); toast.show('Link copied'); } catch { toast.show(url); }
+  };
+
+  const joinWithCode = async () => {
+    if (!parentName.trim()) { setErr('What should the app call you?'); return; }
+    if (!pinOk) { setErr(pin.length < 4 ? 'The PIN needs at least 4 digits.' : 'The two PINs do not match.'); return; }
+    setErr('');
+    setBusy(true);
+    try {
+      await seedLibrary();
+      await saveSettings({ parentName: parentName.trim(), createdAt: nowIso() });
+      await setParentPin(pin);
+      await db.meta.put({ key: 'deviceRole', value: 'parent' });
+      await joinFamily(code, deviceName());
+      const r = await syncNow();
+      if (r.error) throw new Error(r.error);
+      setBusy(false);
+      nav('/settings');
+    } catch (e: any) {
+      setBusy(false);
+      setErr(e?.message ?? 'Could not join. Check the code and the signal.');
+    }
   };
 
   if (athlete && (step === 'who' || step === 'parent')) {
@@ -78,8 +121,8 @@ export function SetupPage() {
             <button className={`btn lg block ${role === 'athlete' ? 'primary' : ''}`} onClick={() => setRole('athlete')}>My athlete's phone (the main one)</button>
             <button className={`btn lg block ${role === 'parent' ? 'primary' : ''}`} onClick={() => setRole('parent')}>My own phone (a parent copy)</button>
           </div>
-          <p className="small muted mt">{role === 'athlete' ? 'He checks in and trains on this phone. You get a PIN-protected parent view on it too.' : 'A parent copy shows the parent dashboard and receives his records as a file he sends you. Set up his phone first.'}</p>
-          <button className="btn primary lg block mt" onClick={() => setStep('parent')}>Next</button>
+          <p className="small muted mt">{role === 'athlete' ? 'He checks in and trains on this phone. You get a PIN-protected parent view on it too, and a link for your own phone.' : SYNC_AVAILABLE ? 'Set up his phone first; it gives you a link or a code. Open the link on this phone, or type the code here, and everything he does shows up here on its own.' : 'A parent copy shows the parent dashboard and receives his records as a file he sends you. Set up his phone first.'}</p>
+          <button className="btn primary lg block mt" onClick={() => setStep(role === 'parent' && SYNC_AVAILABLE ? 'join' : 'parent')}>Next</button>
         </div>
       )}
 
@@ -104,6 +147,33 @@ export function SetupPage() {
           </div>
           {err && <div className="banner danger small">{err}</div>}
           <div className="row mt"><button className="btn" onClick={() => setStep('who')}>Back</button><button className="btn primary grow" disabled={busy} onClick={finishParentPart}>{role === 'athlete' ? "Done. Hand the phone over" : 'Finish'}</button></div>
+        </div>
+      )}
+
+      {step === 'link' && (
+        <div className="card">
+          <h3>For the parent · your own phone</h3>
+          <p className="small">Everything {name.trim() || 'he'} does on this phone will show up on yours on its own, and your approvals will show up here. To connect your phone, send yourself this link and open it there (Messages or AirDrop to yourself works).</p>
+          <button className="btn primary lg block" onClick={shareLink}>Send myself the parent link</button>
+          <p className="small muted mt">Or type this code on your phone under "My own phone": <strong className="mono">{formatCode(familySecret)}</strong></p>
+          <p className="small muted">The link holds a private family code. Keep it to yourself; anyone with it could see his workouts. It is also under the parent view, Linked phones, any time.</p>
+          <button className="btn block mt" onClick={() => setStep('handoff')}>Done. Hand the phone over</button>
+        </div>
+      )}
+
+      {step === 'join' && (
+        <div className="card">
+          <h3>For the parent · connect to {'the athlete'}'s phone</h3>
+          <p className="small muted">Open the parent link from his phone on this phone, or type the code it showed.</p>
+          <div className="field"><label>Family code</label><input className="input mono" value={code} onChange={(e) => setCode(e.target.value.toUpperCase())} placeholder="XXXXX-XXXXX-XXXXX-XXXXX" autoCapitalize="characters" autoCorrect="off" spellCheck={false} /></div>
+          <div className="field"><label>What the app should call you</label><input className="input" value={parentName} onChange={(e) => setParentName(e.target.value)} placeholder="Dad" /></div>
+          <div className="inline-fields">
+            <div className="field"><label>Parent PIN (4 to 8 digits)</label><input className="input" type="password" inputMode="numeric" value={pin} onChange={(e) => setPin(e.target.value.replace(/\D/g, '').slice(0, 8))} aria-label="Parent PIN" /></div>
+            <div className="field"><label>Type it again</label><input className="input" type="password" inputMode="numeric" value={pin2} onChange={(e) => setPin2(e.target.value.replace(/\D/g, '').slice(0, 8))} aria-label="Parent PIN again" /></div>
+          </div>
+          <p className="small muted">A PIN here too, in case this phone ends up in a kid's hands.</p>
+          {err && <div className="banner danger small">{err}</div>}
+          <div className="row mt"><button className="btn" onClick={() => setStep('who')}>Back</button><button className="btn primary grow" disabled={busy} onClick={joinWithCode}>{busy ? 'Connecting…' : 'Connect'}</button></div>
         </div>
       )}
 
@@ -137,6 +207,7 @@ export function SetupPage() {
           <button className="btn primary lg block mt" onClick={() => nav('/settings')}>Open Settings</button>
         </div>
       )}
+      {toast.el}
     </div>
   );
 }

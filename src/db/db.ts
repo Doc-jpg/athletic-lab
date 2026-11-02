@@ -4,7 +4,7 @@
  * version 1 opens in every later version.
  */
 import Dexie, { type Table } from 'dexie';
-import type { Athlete, Settings, Exercise, ExerciseStatus, WorkoutTemplate, Session, SportsLog, CheckIn, SafetyFlag, JournalEntry, HabitLog, MessageShown, Achievement, Mission, SupplementRecord, Day, Who } from '../engine/types';
+import type { Athlete, Settings, Exercise, ExerciseStatus, WorkoutTemplate, Session, SportsLog, CheckIn, SafetyFlag, JournalEntry, HabitLog, MessageShown, Achievement, Mission, SupplementRecord, Tombstone, Day, Who } from '../engine/types';
 import { DEFAULT_SETTINGS, newId, nowIso, todayDay } from '../engine/types';
 import { LIBRARY_EXERCISES, CATALOG_VERSION } from '../data/exercises';
 import { LIBRARY_TEMPLATES, TEMPLATES_VERSION } from '../data/templates';
@@ -32,6 +32,7 @@ export class AthleticLabDB extends Dexie {
   missions!: Table<Mission, string>;
   supplements!: Table<SupplementRecord, string>;
   meta!: Table<Meta, string>;
+  tombstones!: Table<Tombstone, string>;
 
   constructor(name = 'athletic-lab') {
     super(name);
@@ -53,10 +54,23 @@ export class AthleticLabDB extends Dexie {
       supplements: 'id',
       meta: 'key'
     });
+    // v2 (2026-11-02): tombstones so a deletion reaches the other phone through sync. Existing rows untouched.
+    this.version(2).stores({
+      tombstones: 'key, ts'
+    });
   }
 }
 
 export const db = new AthleticLabDB();
+
+/** Tell the sync engine something changed (debounced there). Safe to call anywhere; no-op outside a browser. */
+export function noteChange(): void {
+  try {
+    if (typeof window !== 'undefined') window.dispatchEvent(new Event('athletic-lab:changed'));
+  } catch {
+    /* ignore */
+  }
+}
 
 /** All data tables, for backup and replace. Settings and meta are handled separately. */
 export const DATA_TABLES = ['athlete', 'exercises', 'exerciseStatus', 'templates', 'sessions', 'sportsLogs', 'checkIns', 'flags', 'journal', 'habits', 'messages', 'achievements', 'missions', 'supplements'] as const;
@@ -130,31 +144,37 @@ export async function updateAthlete(patch: Partial<Athlete>, database: AthleticL
   const cur = await database.athlete.get('athlete');
   if (!cur) return;
   await database.athlete.put({ ...cur, ...patch, id: 'athlete', updatedAt: nowIso() });
+  noteChange();
 }
 
 export async function addGoal(text: string, by: Who, database: AthleticLabDB = db): Promise<void> {
   const cur = await database.athlete.get('athlete');
   if (!cur) return;
   await database.athlete.put({ ...cur, goals: [...cur.goals, { id: newId(), text, status: 'active', createdAt: nowIso(), by }], updatedAt: nowIso() });
+  noteChange();
 }
 
 export async function setGoalStatus(id: string, status: 'active' | 'done', database: AthleticLabDB = db): Promise<void> {
   const cur = await database.athlete.get('athlete');
   if (!cur) return;
   await database.athlete.put({ ...cur, goals: cur.goals.map((g) => (g.id === id ? { ...g, status, doneAt: status === 'done' ? nowIso() : undefined } : g)), updatedAt: nowIso() });
+  noteChange();
 }
 
 export async function saveSession(s: Session, database: AthleticLabDB = db): Promise<void> {
   await database.sessions.put({ ...s, updatedAt: nowIso() });
+  noteChange();
 }
 
 export async function updateSession(id: string, patch: Partial<Session>, database: AthleticLabDB = db): Promise<void> {
   await database.sessions.update(id, { ...patch, updatedAt: nowIso() });
+  noteChange();
 }
 
 export async function addSportsLog(input: Omit<SportsLog, 'id' | 'ts'>, database: AthleticLabDB = db): Promise<SportsLog> {
   const l: SportsLog = { id: newId(), ts: nowIso(), ...input };
   await database.sportsLogs.put(l);
+  noteChange();
   return l;
 }
 
@@ -163,6 +183,7 @@ export async function saveCheckIn(input: Omit<CheckIn, 'id' | 'ts'>, database: A
   const existing = await database.checkIns.where('day').equals(input.day).first();
   const c: CheckIn = { id: existing?.id ?? newId(), ts: nowIso(), ...input };
   await database.checkIns.put(c);
+  noteChange();
   return c;
 }
 
@@ -172,6 +193,7 @@ export async function addFlag(input: Omit<SafetyFlag, 'id' | 'ts'>, database: At
   if (dup) return dup;
   const f: SafetyFlag = { id: newId(), ts: nowIso(), ...input };
   await database.flags.put(f);
+  noteChange();
   return f;
 }
 
@@ -179,18 +201,21 @@ export async function addJournal(input: { day: Day; text: string; isPrivate: boo
   const ts = nowIso();
   const j: JournalEntry = { id: newId(), ts, updatedAt: ts, ...input };
   await database.journal.put(j);
+  noteChange();
   return j;
 }
 
 export async function setHabit(day: Day, habit: HabitLog['habit'], done: boolean, database: AthleticLabDB = db): Promise<void> {
   const cur = await database.habits.where('day').equals(day).filter((h) => h.habit === habit).first();
   await database.habits.put({ id: cur?.id ?? newId(), day, habit, done, ts: nowIso() });
+  noteChange();
 }
 
 export async function setExerciseStatus(exerciseId: string, patch: Partial<ExerciseStatus>, database: AthleticLabDB = db): Promise<ExerciseStatus> {
   const cur = (await database.exerciseStatus.get(exerciseId)) ?? { exerciseId, approvedLoads: [], updatedAt: nowIso() };
   const next: ExerciseStatus = { ...cur, ...patch, exerciseId, updatedAt: nowIso() };
   await database.exerciseStatus.put(next);
+  noteChange();
   return next;
 }
 
@@ -200,6 +225,16 @@ export async function saveExercise(e: Exercise, database: AthleticLabDB = db): P
 
 export async function saveTemplate(t: WorkoutTemplate, database: AthleticLabDB = db): Promise<void> {
   await database.templates.put({ ...t, updatedAt: nowIso() });
+}
+
+/** Delete a journal entry and leave a tombstone so the deletion reaches the other phone. */
+export async function deleteJournal(id: string, database: AthleticLabDB = db): Promise<void> {
+  await database.transaction('rw', database.journal, database.tombstones, async () => {
+    const j = await database.journal.get(id);
+    await database.journal.delete(id);
+    if (j && !j.isPrivate) await database.tombstones.put({ key: `journal:${id}`, tbl: 'journal', id, ts: nowIso() });
+  });
+  noteChange();
 }
 
 /** Wipe everything on this phone. Used by Replace restore and "start over". */

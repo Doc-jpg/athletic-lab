@@ -4,7 +4,7 @@ A personal strength, mobility, athleticism and healthy-habits app for one young 
 
 - **Live app:** https://doc-jpg.github.io/athletic-lab/ (iPhone: Safari, Share, Add to Home Screen; Android: Chrome, menu, Install app). Open it once online so it can store itself for offline use.
 - **Code:** https://github.com/Doc-jpg/athletic-lab (every push to `main` redeploys through GitHub Actions).
-- **Who sets it up:** the parent, once, on the athlete's phone (two minutes); then the app talks to the kid. `docs/IPHONE_SETUP.md` has the exact steps and the optional parent copy.
+- **Who sets it up:** the parent, once, on the athlete's phone (two minutes); then the app talks to the kid. A family link connects the parent's phone, and from then on everything syncs on its own (`docs/IPHONE_SETUP.md`).
 - **Docs:** `docs/` (architecture, decisions and lessons, research with sources, roadmap, iPhone and parent setup, design principles, the original master prompt).
 
 ## What it does
@@ -18,7 +18,7 @@ A personal strength, mobility, athleticism and healthy-habits app for one young 
 7. **Journal, calendar and progress** against his own history only. **Badges** that are never taken away; **weekly missions** that simply expire.
 8. **Habits:** water, meals, fruit and vegetables, sleep, play. No calories, no weight, no supplements by default (a parent can record a clinician's instruction).
 9. **Parent mode** behind a PIN: alerts, the week, form checks and load approvals, strength days per week, growth-spurt mode, reminders and quiet hours, backups. Everything parent mode shows is listed on a card Eli can read; private journal notes stay private.
-10. **Backup** (ZIP with checksums), **parent pack** (no private notes), restore with **merge** that never overwrites a newer record, three visual themes, a guided tour and an FAQ, and three weeks of sample data to explore.
+10. **Automatic sync** between the athlete's phone and the parent's phone through a family code (private notes and PINs never leave the phone), plus **backup** (ZIP with checksums), **parent pack**, restore with **merge** that never overwrites a newer record, three visual themes, a guided tour and an FAQ, and three weeks of sample data to explore.
 
 ## Run the checks
 

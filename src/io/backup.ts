@@ -52,7 +52,7 @@ export async function buildBackup(appVersion: string, scope: 'full' | 'parent' =
     counts[`${t}.json`] = rows.length;
   }
   const settings = await database.settings.get('settings');
-  const safeSettings = settings ? { ...settings, parentPinHash: undefined, parentPinSalt: undefined, athletePinHash: undefined, athletePinSalt: undefined } : null;
+  const safeSettings = settings ? { ...settings, parentPinHash: undefined, parentPinSalt: undefined, athletePinHash: undefined, athletePinSalt: undefined, sync: undefined } : null;
   files['settings.json'] = json(scope === 'full' ? settings ?? null : safeSettings);
   counts['settings.json'] = settings ? 1 : 0;
   const athlete = await database.athlete.get('athlete');
@@ -96,10 +96,10 @@ export interface RestoreReport {
   keptNewerHere: Array<{ table: string; id: string; here: string; backup: string }>;
 }
 
-function stamp(r: any): string {
+export function stamp(r: any): string {
   return r.updatedAt ?? r.ts ?? r.earnedAt ?? r.createdAt ?? '';
 }
-function keyOf(table: DataTable, r: any): string {
+export function keyOf(table: DataTable, r: any): string {
   return table === 'exerciseStatus' ? r.exerciseId : r.id;
 }
 
@@ -113,11 +113,18 @@ function mergeAthlete(cur: any, incoming: any): any {
   return { ...older, ...newer, goals: [...goals.values()] };
 }
 
-/** Sessions: the copy with more completed sets or the later status wins; a done session is never replaced by a planned one. */
+/** Sessions: the more finished status wins; a done session is never replaced by a planned one. */
 function mergeSession(cur: any, incoming: any): any {
   const rank: Record<string, number> = { planned: 0, in_progress: 1, skipped: 2, stopped: 3, done: 4 };
   if ((rank[incoming.status] ?? 0) > (rank[cur.status] ?? 0)) return incoming;
   if ((rank[incoming.status] ?? 0) < (rank[cur.status] ?? 0)) return cur;
+  return stamp(incoming) > stamp(cur) ? incoming : cur;
+}
+
+/** The one merge rule for backups and sync: what this phone should hold given its copy and another copy. */
+export function mergeRecord(table: DataTable, cur: any, incoming: any): any {
+  if (table === 'athlete') return mergeAthlete(cur, incoming);
+  if (table === 'sessions') return mergeSession(cur, incoming);
   return stamp(incoming) > stamp(cur) ? incoming : cur;
 }
 
@@ -135,10 +142,7 @@ export async function restoreBackup(contents: BackupContents, mode: 'merge' | 'r
       for (const rec of incoming) {
         const cur = mode === 'replace' ? undefined : await table.get(keyOf(t, rec));
         if (!cur) { await table.put(rec); added += 1; continue; }
-        let merged: any;
-        if (t === 'athlete') merged = mergeAthlete(cur, rec);
-        else if (t === 'sessions') merged = mergeSession(cur, rec);
-        else merged = stamp(rec) > stamp(cur) ? rec : cur;
+        const merged: any = mergeRecord(t, cur, rec);
         if (JSON.stringify(merged) !== JSON.stringify(cur)) { await table.put(merged); updated += 1; } else unchanged += 1;
         if (stamp(rec) < stamp(cur)) report.keptNewerHere.push({ table: t, id: keyOf(t, rec), here: stamp(cur), backup: stamp(rec) });
       }
@@ -155,6 +159,7 @@ export async function restoreBackup(contents: BackupContents, mode: 'merge' | 'r
       next.athletePinSalt = localSettings?.athletePinSalt;
       next.tourSeenAt = localSettings?.tourSeenAt ?? next.tourSeenAt;
       next.parentName = localSettings?.parentName ?? next.parentName;
+      next.sync = localSettings?.sync;
     }
     if (Object.keys(next).length) await database.settings.put({ ...next, id: 'settings' });
   });

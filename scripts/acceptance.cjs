@@ -33,6 +33,11 @@ const shot = (page, name) => page.screenshot({ path: path.join(shotsDir, `${name
   await page.fill('input[aria-label="Parent PIN"]', '7101');
   await page.fill('input[aria-label="Parent PIN again"]', '7101');
   await page.click('role=button[name="Done. Hand the phone over"]');
+  await page.waitForSelector('text=your own phone');
+  const codeText = await page.locator('strong.mono').innerText();
+  expect('family code shown to the parent', /^[A-Z2-9]{5}-[A-Z2-9]{5}-[A-Z2-9]{5}-[A-Z2-9]{5}$/.test(codeText), true);
+  const FAMILY_CODE = codeText;
+  await page.click('role=button[name="Done. Hand the phone over"]');
   await page.waitForSelector('text=Hey Eli, this is yours');
   expect('PIN is never shown on screen', /7101/.test(await body()), false);
   await page.click('text=Pro sports');
@@ -240,19 +245,40 @@ const shot = (page, name) => page.screenshot({ path: path.join(shotsDir, `${name
   await p2.waitForSelector('text=whose phone is this?');
   await p2.click('role=button[name="My own phone (a parent copy)"]');
   await p2.click('role=button[name="Next"]');
-  await p2.fill('input[placeholder="First name"]', 'Eli');
-  await p2.fill('input[placeholder="2014"]', '2014');
+  await p2.waitForSelector('text=Family code');
+  await p2.fill('input[placeholder="XXXXX-XXXXX-XXXXX-XXXXX"]', FAMILY_CODE);
   await p2.fill('input[placeholder="Dad"]', 'Dad');
   await p2.fill('input[aria-label="Parent PIN"]', '7101');
   await p2.fill('input[aria-label="Parent PIN again"]', '7101');
-  await p2.click('role=button[name="Finish"]');
-  await p2.waitForSelector('text=Parent copy ready');
-  expect('parent copy explains the pack flow', /Make a parent pack/.test(await p2.locator('body').innerText()), true);
-  await shot(p2, '10_parent_copy_ready');
-  await p2.click('role=button[name="Open Settings"]');
-  await p2.waitForSelector('text=For Dad');
+  await p2.click('role=button[name="Connect"]');
+  await p2.waitForURL(/\/settings/, { timeout: 30000 });
+  await p2.waitForSelector('text=For Dad', { timeout: 30000 });
+  await p2.waitForTimeout(1500);
+  let t2 = await p2.locator('body').innerText();
+  expect('parent copy received the athlete through sync', /Set up for Eli/.test(t2), true);
   const firstCard = await p2.locator('.app-main .card').first().innerText();
   expect('parent door sits at the top on the parent copy', /For Dad/i.test(firstCard), true);
+  await shot(p2, '10_parent_copy_synced');
+  // Eli's phone also pushed the finished session; the parent view on dad's phone shows it.
+  await p2.click('role=button[name="Open the parent view"]');
+  await p2.fill('input[aria-label="PIN"]', '7101');
+  await p2.click('role=button[name="Unlock"]');
+  await p2.waitForURL(/\/parent/);
+  await p2.waitForTimeout(800);
+  t2 = await p2.locator('body').innerText();
+  expect('dad sees the light day session synced from eli', /Light day/.test(t2), true);
+  // Dad approves 10 lb on the row; Eli's phone picks it up on its next sync.
+  await p2.click('role=button[name="Exercises"]');
+  const rowCard2 = p2.locator('.item', { hasText: 'Supported dumbbell row' });
+  await rowCard2.getByRole('button', { name: '10 lb dumbbells' }).click();
+  await p2.waitForTimeout(3500);
+  await page.goto(URL + '#/workouts');
+  await page.reload(); // a hash change alone is not "opening the app"; a reload is, and it syncs on open
+  await page.waitForSelector('text=Every exercise');
+  await page.waitForTimeout(3500);
+  await page.click('text=Supported dumbbell row');
+  await page.waitForSelector('text=Your history');
+  expect('eli sees the approval made on dad\'s phone', /Approved: 5 lb dumbbells, 10 lb dumbbells/.test(await body()), true);
   await ctx2.close();
 
   await browser.close();
