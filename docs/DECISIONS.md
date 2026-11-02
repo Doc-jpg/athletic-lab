@@ -12,7 +12,7 @@ Deren refused the file-based parent pack: he does not want to get on Eli's phone
 - **When it syncs:** app open, foreground, back online, two seconds after any write (`noteChange` event from the db helpers), every two minutes while open. iPhone web apps do not run in the background; "automatic" means on the next open. A hash-only navigation is not an open (learned in the acceptance script); a reload or a return to the foreground is.
 - **Setup flow now:** athlete phone → parent part → "Send myself the parent link" → hand-off. Parent phone → open the link (name, PIN, Connect) or "My own phone" + code. A parent phone that has not yet received the athlete's records shows a waiting card instead of the setup wizard.
 - **Parent packs stay** as the no-signal fallback and as a backup; nothing requires them any more.
-- **Free Supabase projects pause after a week of no traffic:** a scheduled task pings the records endpoint every three days. If it pauses anyway, the dashboard restores it in one click.
+- **Free Supabase projects pause after a week of no traffic:** `.github/workflows/keepalive.yml` pings the records endpoint every three days (a cloud scheduled task was refused by the harness, so the repo does it). If it pauses anyway, the dashboard restores it in one click.
 - Verified: 7 sync tests on a fake server with the same rules plus one live round trip against the real project (`LIVE_SYNC=1 npm test`); the Playwright walk now sets up two simulated phones, syncs a session from Eli's to Dad's and an approval from Dad's to Eli's through the live server.
 - Credentials: the publishable key is in `src/sync-config.ts` on purpose (it is public by design; RLS is the lock). No secret key is anywhere in the repo or on the laptop.
 

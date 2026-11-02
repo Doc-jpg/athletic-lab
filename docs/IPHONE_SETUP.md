@@ -22,7 +22,7 @@ From then on Eli opens the app, checks in, and trains. The only parent thing on 
 - Merging is per record and never overwrites a newer copy; both phones adding a goal keeps both goals.
 - Never synced: journal notes marked private, PINs, settings. The server holds only the hash of the family code and only answers requests that carry the code.
 - The parent view, Settings tab, "Linked phones" shows the status, a Sync now button, the link and code to connect another phone, and Disconnect.
-- The cloud side is a free Supabase project (organization "Flesher Family", project "athletic-lab"), separate from anything AiroDental. Free projects pause after a week with no traffic; a scheduled task pings it every three days so that does not happen. If it ever does pause, the Supabase dashboard restores it with one click and the phones catch up.
+- The cloud side is a free Supabase project (organization "Flesher Family", project "athletic-lab"), separate from anything AiroDental. Free projects pause after a week with no traffic; a GitHub Actions job in the repo pings it every three days so that does not happen. If it ever does pause, the Supabase dashboard restores it with one click and the phones catch up.
 
 ## The parent view on Eli's phone
 Settings (gear on Today) → **Open the parent view** → PIN. It locks again after ten minutes in the background. Tabs: This week (alerts, last seven days, totals), Exercises (form checks, 5 lb and 10 lb approvals, turn off), Settings (linked phones, strength days, growth-spurt mode, reminders, clinician-only supplement record, PIN and name, backup, sample data, erase).
