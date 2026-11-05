@@ -3,6 +3,9 @@ import { useNavigate, useParams, Link } from 'react-router-dom';
 import { useAthlete, useExerciseMap, useSession, useSessions, useStatuses, fmtClock } from '../hooks';
 import { useMode } from '../mode';
 import { Figure } from '../components/Figure';
+import { Watch } from '../components/Watch';
+import { videosFor } from '../../data/videos';
+import { useClips } from '../hooks';
 import { Sheet, useToast } from '../components/Sheet';
 import { updateSession } from '../../db/db';
 import { finishSession } from '../../engine/today';
@@ -33,6 +36,7 @@ export function WorkoutPage() {
   const [hold, setHold] = useState<{ setIdx: number; left: number } | null>(null);
   const [stopOpen, setStopOpen] = useState(false);
   const [finishOpen, setFinishOpen] = useState(false);
+  const [watchOpen, setWatchOpen] = useState(false);
   const [swapOpen, setSwapOpen] = useState(false);
   const [load, setLoad] = useState<Load>('body');
   const [repsAdj, setRepsAdj] = useState<number | null>(null);
@@ -77,6 +81,7 @@ export function WorkoutPage() {
 
   const current: SessionItem | undefined = session && index !== null ? session.items[index] : undefined;
   const exercise: Exercise | undefined = current ? exercises.get(current.exerciseId) : undefined;
+  const clips = useClips(exercise?.id);
   const loads = useMemo(() => (exercise ? allowedLoads(exercise, statuses.get(exercise.id)) : ['body'] as Load[]), [exercise, statuses]);
   useEffect(() => { if (exercise) { setLoad(lastLoad(exercise.id, sessions, loads)); setRepsAdj(null); setHold(null); } }, [exercise?.id]);
 
@@ -140,6 +145,7 @@ export function WorkoutPage() {
         <div className="chips" style={{ marginTop: 6 }}>{exercise.cues.map((c) => <span key={c} className="cue">{c}</span>)}</div>
         <details className="fold"><summary>How to do it</summary><ol className="step-list">{exercise.steps.map((s, i) => <li key={i}>{s}</li>)}</ol>{exercise.commonErrors.length > 0 && <div className="small muted">Watch for: {exercise.commonErrors.map((e) => `${e.error.toLowerCase()} (${e.fix.toLowerCase()})`).join('; ')}</div>}</details>
         <details className="fold"><summary>Why it matters</summary><p className="small">{exercise.develops} {exercise.why}</p><Link className="small" to={`/exercises/${exercise.id}`}>Full exercise page</Link></details>
+        {(videosFor(exercise.id).length > 0 || clips.length > 0) && <button className="btn block mt" onClick={() => setWatchOpen(true)}>▶ Watch it</button>}
         {current.note && current.note.startsWith('Ready to try') && <div className="banner green small">{current.note}. Tap Swap to try it, or stay here. Both are good choices.</div>}
       </div>
 
@@ -197,6 +203,7 @@ export function WorkoutPage() {
           <p className="small muted mt">Harder versions that need a weight or a parent form check do not show up here until a parent approves them.</p>
         </Sheet>
       )}
+      {watchOpen && <Sheet title={exercise.name} onClose={() => setWatchOpen(false)}><Watch exerciseId={exercise.id} who={mode} /></Sheet>}
       {stopOpen && <StopSheet session={session} onClose={() => setStopOpen(false)} />}
       {finishOpen && <FinishSheet session={session} onClose={() => setFinishOpen(false)} />}
       {toast.el}

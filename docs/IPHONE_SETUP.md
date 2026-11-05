@@ -24,8 +24,12 @@ From then on Eli opens the app, checks in, and trains. The only parent thing on 
 - The parent view, Settings tab, "Linked phones" shows the status, a Sync now button, the link and code to connect another phone, and Disconnect.
 - The cloud side is a free Supabase project (organization "Flesher Family", project "athletic-lab"), separate from anything AiroDental. Free projects pause after a week with no traffic; a GitHub Actions job in the repo pings it every three days so that does not happen. If it ever does pause, the Supabase dashboard restores it with one click and the phones catch up.
 
+## Videos and clips of Eli
+- Most moves have a short demonstration that plays inside the app ("Watch it" on the exercise page, and a Watch it button in the workout). It needs a signal; everything else works offline.
+- The best demo is Eli himself. In the parent view, open any exercise (Exercises tab, tap its name; or Workouts) and tap **+ Add a clip of him**: shoot ten seconds or pick a clip from your library. It uploads to the family's private cloud space and shows on his phone at the top of Watch it. Keep clips short (under 60 MB). Remove one from the same place.
+
 ## The parent view on Eli's phone
-Settings (gear on Today) → **Open the parent view** → PIN. It locks again after ten minutes in the background. Tabs: This week (alerts, last seven days, totals), Exercises (form checks, 5 lb and 10 lb approvals, turn off), Settings (linked phones, strength days, growth-spurt mode, reminders, clinician-only supplement record, PIN and name, backup, sample data, erase).
+Settings (gear on Today) → **Open the parent view** → PIN. It locks again after ten minutes in the background. Tabs: This week (alerts, last seven days, totals), Exercises (form checks, 5 lb and 10 lb approvals, turn off; a pill shows which have a demo or a clip), Settings (linked phones, strength days, growth-spurt mode, reminders, clinician-only supplement record, PIN and name, backup, sample data, erase).
 
 ## Backups (every few weeks)
 Sync is not a backup. Eli's Settings has **Back up everything** (share the file to Files or iCloud Drive); the parent view has the same plus restore and parent packs. Restoring on a new phone: install, parent setup (new PIN), parent view → Restore → **Replace everything**, then reconnect with the family code from the other phone.

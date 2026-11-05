@@ -2,6 +2,16 @@
 
 Newest first. Append here; this is where the next session starts.
 
+## 2026-11-05 (later), animated drawings, demonstration videos and the family's own clips (Deren: "would a 12-year-old who has never seen these moves understand the drawings?")
+
+The honest answer was no, not for footwork: a single stick-figure frame shows a shape, not a movement. Three things changed in v0.5.0.
+
+- **Drawings move.** Forty poses now have a second frame and the figure eases between them (ping-pong, with a pause at each end, `prefers-reduced-motion` respected). Footwork poses start from the ready stance so the first step is visible. Static holds say "(hold)" in the caption.
+- **Demonstration videos play inside the app**, one per exercise for the 35 moves a kid is unlikely to know (every infield move, the athletic and coordination drills, core, mobility and the assisted versions; common moves like a plank or push-up have none). Each is the official YouTube embed (`youtube-nocookie.com`, loaded only when tapped, so the page costs nothing until then and works offline minus the video). The links live in `src/data/videos.ts` with title, channel and a one-line note where the clip differs from our version ("shown with a band; do it without one"). Every link passed YouTube's oEmbed check when added, and `scripts/check-videos.cjs` runs in the same three-day GitHub Actions job that keeps the database awake, failing loudly and naming the exercise if a channel ever pulls one. Progressions reuse the base move's demo (`VIDEO_ALIAS`).
+- **Not rehosted.** Deren asked whether we could screen-capture the videos and host them ourselves so links never die. We do not: those clips are other people's work and copying them is not ours to do. Evergreen comes from the check job (a dead link is noticed within three days and swapped) and from the next point.
+- **The family's own clips.** The slot Deren actually wants: a ten-second clip of Eli doing a move right, shot on a parent's phone. From the parent view, any exercise page has "+ Add a clip of him" (camera or library). The file goes to a private `clips` bucket in the same free Supabase project under `<family hash>/<exercise>/<id>`; storage policies only let a request carrying the family code see, add or delete its own family's folder (verified with curl: wrong key gets nothing, another family's path is refused). The metadata row (`clips` table, schema v3) syncs like everything else, so the clip shows on Eli's phone under "Watch it" ahead of the YouTube demos. Clips are fetched with the family key and played from a local blob, never a public URL. Removal deletes the file and tombstones the row so both phones drop it. 60 MB cap per clip.
+- Durations of the YouTube picks were not machine-verified (oEmbed has no length field); the channels chosen are short-format coaching and clinic demos. Weak spots to watch on the phone: the ready-position pick shows the stance but not the hop; the hip-turn pick is a reaction drill rather than a pure hip turn; the row demo uses a heavier dumbbell than Eli would.
+
 ## 2026-11-05, Shortstop Movement (Deren: "I want Eli to move like a shortstop")
 
 Two coaches who evaluated Eli this fall said the same thing: quick feet and a good glove, needs more strength and better infield footwork. The library covered general athleticism; nothing was specific to a middle infielder.
@@ -62,7 +72,7 @@ Decisions specific to this app:
 - **Private means private.** Private journal entries are filtered out of parent mode queries, the parent pack, and the parent page; full backups keep them (they are the phone's own backup). The visibility card is the whole list; nothing else is collected.
 - **No supplements by default.** The library, templates, messages and badges contain no supplement words (tested). A parent can record a clinician's product, dose and schedule; it shows on Habits as "From the doctor" and only a parent can change it.
 - **Gamification that cannot punish.** Badges only ever add; missions expire; the message pool is tested against guilt, shame, streak and body-image words; recovery and stopping for pain earn badges.
-- **Illustrations are drawn stick figures from joint positions**, original, with the key cue as an orange arrow. Not photos of anyone. Good enough to show the shape; photos or short clips of Eli himself are a Phase 3 idea, stored locally.
+- **Illustrations are drawn stick figures from joint positions**, original, with the key cue as an orange arrow. Not photos of anyone. Good enough to show the shape; v0.5.0 added motion, in-app demonstration videos and the family's own clips (see the 2026-11-05 entry).
 - **No server, honestly.** Backup card says remote parent access and auto-sync are not enabled. Device notifications are optional, permission-gated, and only while the app is open; nothing promises background alerts.
 - **Parent PIN starts as the one Deren gave in chat** and is changeable in Parent mode. The hash is salted; the PIN is not in any file or backup.
 

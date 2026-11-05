@@ -1,7 +1,7 @@
 # Roadmap
 
 ## Phase 1 (done 2026-11-02)
-Separate installable PWA; readiness check-in and engine with multi-day workload, body-part blocks and Pitch Smart rest days; 50-exercise original library with drawn demonstrations; Strength A and B, Athletic coordination, Daily Foundations, Light day, Recovery; phase-based progression with caps and no automatic weight; interactive player with timers, swaps, pause, notes and a pain-aware Stop; history, journal, calendar, progress charts, badges, missions; habits page; rotating daily messages with quiet hours; three themes; tour and FAQ; sample data; backup, parent pack, restore and merge; parent mode with alerts, approvals, settings, clinician-only supplement record.
+Separate installable PWA; readiness check-in and engine with multi-day workload, body-part blocks and Pitch Smart rest days; 60-exercise original library with animated drawings, in-app demonstration videos and the family's own clips; Strength A and B, Athletic coordination, Daily Foundations, Light day, Recovery; phase-based progression with caps and no automatic weight; interactive player with timers, swaps, pause, notes and a pain-aware Stop; history, journal, calendar, progress charts, badges, missions; habits page; rotating daily messages with quiet hours; three themes; tour and FAQ; sample data; backup, parent pack, restore and merge; parent mode with alerts, approvals, settings, clinician-only supplement record.
 
 ## Done since
 - 2026-11-05: Shortstop Movement session and ten infield exercises (see DECISIONS).

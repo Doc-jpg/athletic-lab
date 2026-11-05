@@ -392,6 +392,20 @@ export interface Mission {
 }
 
 /** Parent-only, off by default. Exists only when a clinician recommended a specific product and schedule. */
+/** A short clip of the athlete doing an exercise, shot by a parent and stored in the family's own cloud space. */
+export interface Clip {
+  id: string;
+  exerciseId: string;
+  /** Storage path inside the clips bucket: `${familyId}/${exerciseId}/${id}.${ext}` */
+  path: string;
+  mime: string;
+  bytes: number;
+  note?: string;
+  by: Who;
+  createdAt: Iso;
+  updatedAt: Iso;
+}
+
 export interface SupplementRecord {
   id: string;
   name: string;

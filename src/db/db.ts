@@ -4,7 +4,7 @@
  * version 1 opens in every later version.
  */
 import Dexie, { type Table } from 'dexie';
-import type { Athlete, Settings, Exercise, ExerciseStatus, WorkoutTemplate, Session, SportsLog, CheckIn, SafetyFlag, JournalEntry, HabitLog, MessageShown, Achievement, Mission, SupplementRecord, Tombstone, Day, Who } from '../engine/types';
+import type { Athlete, Settings, Exercise, ExerciseStatus, WorkoutTemplate, Session, SportsLog, CheckIn, SafetyFlag, JournalEntry, HabitLog, MessageShown, Achievement, Mission, SupplementRecord, Tombstone, Clip, Day, Who } from '../engine/types';
 import { DEFAULT_SETTINGS, newId, nowIso, todayDay } from '../engine/types';
 import { LIBRARY_EXERCISES, CATALOG_VERSION } from '../data/exercises';
 import { LIBRARY_TEMPLATES, TEMPLATES_VERSION } from '../data/templates';
@@ -33,6 +33,7 @@ export class AthleticLabDB extends Dexie {
   supplements!: Table<SupplementRecord, string>;
   meta!: Table<Meta, string>;
   tombstones!: Table<Tombstone, string>;
+  clips!: Table<Clip, string>;
 
   constructor(name = 'athletic-lab') {
     super(name);
@@ -58,6 +59,10 @@ export class AthleticLabDB extends Dexie {
     this.version(2).stores({
       tombstones: 'key, ts'
     });
+    // v3 (2026-11-05): the family's own exercise clips (metadata; the file lives in the cloud bucket).
+    this.version(3).stores({
+      clips: 'id, exerciseId'
+    });
   }
 }
 
@@ -73,7 +78,7 @@ export function noteChange(): void {
 }
 
 /** All data tables, for backup and replace. Settings and meta are handled separately. */
-export const DATA_TABLES = ['athlete', 'exercises', 'exerciseStatus', 'templates', 'sessions', 'sportsLogs', 'checkIns', 'flags', 'journal', 'habits', 'messages', 'achievements', 'missions', 'supplements'] as const;
+export const DATA_TABLES = ['athlete', 'exercises', 'exerciseStatus', 'templates', 'sessions', 'sportsLogs', 'checkIns', 'flags', 'journal', 'habits', 'messages', 'achievements', 'missions', 'supplements', 'clips'] as const;
 export type DataTable = (typeof DATA_TABLES)[number];
 
 /** Seed or refresh the shipped library. Custom items and edited library items are kept. */

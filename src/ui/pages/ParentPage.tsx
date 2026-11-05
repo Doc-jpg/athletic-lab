@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { Link, Navigate } from 'react-router-dom';
-import { useAthlete, useCheckIns, useExercises, useFlags, useMeta, useSessions, useSettings, useSportsLogs, useStatuses, useSupplements, useToday, fmtDate, timeAgo } from '../hooks';
+import { useAthlete, useCheckIns, useExercises, useFlags, useMeta, useSessions, useSettings, useSportsLogs, useStatuses, useSupplements, useToday, useClips, fmtDate, timeAgo } from '../hooks';
 import { useMode } from '../mode';
 import { db, saveSettings, setExerciseStatus, setParentPin, updateAthlete, clearAll } from '../../db/db';
 import { loadDemo, removeDemo } from '../../data/demo';
 import { addDays, newId, nowIso, type Load, type SupplementRecord } from '../../engine/types';
 import { LOAD_WORDS, AREA_WORDS } from '../../data/exercises';
+import { videosFor } from '../../data/videos';
 import { Sheet, Confirm, useToast } from '../components/Sheet';
 import { BackupPanel } from '../components/BackupPanel';
 import { SyncCard } from '../components/SyncCard';
@@ -27,6 +28,7 @@ export function ParentPage() {
   const flags = useFlags();
   const exercises = useExercises();
   const statuses = useStatuses();
+  const clips = useClips();
   const supplements = useSupplements();
   const toast = useToast();
   const [tab, setTab] = useState<'week' | 'exercises' | 'settings'>('week');
@@ -116,6 +118,7 @@ export function ParentPage() {
 
       {tab === 'exercises' && (
         <>
+          <div className="banner info small">Videos: most moves have a demonstration that plays inside the app. The best demo is a ten-second clip of {name} doing it right: open any exercise (tap its name, or find it under Workouts) and use "Add a clip of him". {clips.length ? `${clips.length} clip${clips.length === 1 ? '' : 's'} so far.` : 'No clips yet.'}{settings.sync?.enabled ? '' : ' Clips need the phones linked first.'}</div>
           <div className="banner info small">Form check: you watched the first reps and the movement looked right. A weighted exercise stays out of sessions until it is checked. Approving 5 lb or 10 lb only lets {name} pick that weight; the app never raises it on its own.</div>
           {(Object.keys(AREA_WORDS) as Array<keyof typeof AREA_WORDS>).map((area) => {
             const list = exercises.filter((e) => e.area === area && !e.archived && (e.needsFormCheck || e.loads.length > 1 || e.level !== 'beginner'));
@@ -128,7 +131,7 @@ export function ParentPage() {
                     const st = statuses.get(e.id);
                     return (
                       <div key={e.id} className="item" style={{ flexDirection: 'column', alignItems: 'stretch', gap: 6 }}>
-                        <div className="row between"><Link to={`/exercises/${e.id}`}><strong>{e.name}</strong></Link><span className="pill">{e.level}</span></div>
+                        <div className="row between"><Link to={`/exercises/${e.id}`}><strong>{e.name}</strong></Link><span className="row" style={{ gap: 6 }}>{clips.some((c) => c.exerciseId === e.id) && <span className="pill green">clip</span>}{videosFor(e.id).length > 0 && <span className="pill">▶ demo</span>}<span className="pill">{e.level}</span></span></div>
                         <div className="chips">
                           {(e.needsFormCheck || e.loads.length > 1) && <button className={`chip sm ${st?.formCheckedAt ? 'on' : ''}`} onClick={() => formCheck(e.id, !st?.formCheckedAt)}>{st?.formCheckedAt ? `Form checked ${timeAgo(st.formCheckedAt)}` : 'Mark form checked'}</button>}
                           {e.loads.filter((l) => l !== 'body').map((l) => <button key={l} className={`chip sm ${st?.approvedLoads.includes(l) ? 'on' : ''}`} disabled={!st?.formCheckedAt} onClick={() => toggleLoad(e.id, l)}>{LOAD_WORDS[l]}</button>)}

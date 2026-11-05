@@ -2,6 +2,8 @@ import React from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useExercise, useExerciseMap, useSessions, useStatuses, fmtDate } from '../hooks';
 import { Figure } from '../components/Figure';
+import { Watch } from '../components/Watch';
+import { useMode } from '../mode';
 import { AREA_WORDS, LOAD_WORDS } from '../../data/exercises';
 import { doseText } from '../../engine/program';
 import { Spark } from '../components/Charts';
@@ -13,6 +15,7 @@ export function ExercisePage() {
   const all = useExerciseMap();
   const statuses = useStatuses();
   const sessions = useSessions();
+  const { mode } = useMode();
   if (!e) return <div className="empty">Loading…</div>;
   const status = statuses.get(e.id);
   const history = sessions.filter((s) => s.status === 'done').flatMap((s) => s.items.filter((i) => i.exerciseId === e.id && i.sets.some((x) => x.done)).map((i) => ({ day: s.day, item: i }))).sort((a, b) => a.day.localeCompare(b.day));
@@ -28,6 +31,7 @@ export function ExercisePage() {
         <p><strong>Builds:</strong> {e.develops}</p>
         <p><strong>{e.area === 'infield' ? 'Why it matters at short:' : 'Why it matters beyond sports:'}</strong> {e.why}</p>
       </div>
+      <Watch exerciseId={e.id} who={mode} asCard />
       <div className="card">
         <h3>How to do it</h3>
         <ol className="step-list">{e.steps.map((s, i) => <li key={i}>{s}</li>)}</ol>

@@ -1,7 +1,10 @@
-# The sync database is a free Supabase project, which pauses after a week with no traffic.
-# This pings it every three days so it stays awake. A failing run means it paused anyway;
-# restoring it is one click at https://supabase.com/dashboard/project/kdulamsgpgozryacmhok
-name: Keep the sync database awake
+# Two things that can quietly rot are checked every three days:
+# 1. The sync database is a free Supabase project, which pauses after a week with no traffic. A ping
+#    keeps it awake. A failing ping means it paused anyway; restoring it is one click at
+#    https://supabase.com/dashboard/project/kdulamsgpgozryacmhok
+# 2. The demonstration videos in src/data/videos.ts are YouTube links. If a channel pulls one, this
+#    run fails and names the exercise to fix.
+name: Keep the sync database awake and the videos checked
 on:
   schedule:
     - cron: '17 9 */3 * *'
@@ -19,3 +22,12 @@ jobs:
             -H "x-family-key: keepalive-ping-0000000000")
           echo "HTTP $code"
           test "$code" = "200"
+  videos:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Every demonstration video still exists
+        run: node scripts/check-videos.cjs

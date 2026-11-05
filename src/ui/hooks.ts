@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db, getSettings } from '../db/db';
-import type { Athlete, Settings, Exercise, ExerciseStatus, WorkoutTemplate, Session, SportsLog, CheckIn, SafetyFlag, JournalEntry, HabitLog, MessageShown, Achievement, Mission, SupplementRecord, Day } from '../engine/types';
+import type { Athlete, Settings, Exercise, ExerciseStatus, WorkoutTemplate, Session, SportsLog, CheckIn, SafetyFlag, JournalEntry, HabitLog, MessageShown, Achievement, Mission, SupplementRecord, Day, Clip } from '../engine/types';
 import { DEFAULT_SETTINGS, todayDay } from '../engine/types';
 
 export function useSettings(): Settings {
@@ -67,6 +67,10 @@ export function useSupplements(): SupplementRecord[] {
 }
 export function useMeta(key: string): unknown {
   return useLiveQuery(async () => (await db.meta.get(key))?.value, [key]);
+}
+
+export function useClips(exerciseId?: string): Clip[] {
+  return useLiveQuery(() => (exerciseId ? db.clips.where('exerciseId').equals(exerciseId).toArray() : db.clips.toArray()), [exerciseId], []) ?? [];
 }
 
 export function useOnline(): boolean {

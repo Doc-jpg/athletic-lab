@@ -143,6 +143,18 @@ const shot = (page, name) => page.screenshot({ path: path.join(shotsDir, `${name
   const ssCount = await page.locator('.progress-dots i').count();
   expect('yellow day drops the bound, the hop and the sprint starts (15 items become 9)', ssCount, 9);
   expect('one set each on a yellow day', /Lighter day: one set/.test(t), true);
+  // The workout player offers a Watch button on moves that have a demo (warm-ups do not); the sheet loads the embed only on tap.
+  for (let k = 0; k < 6 && (await page.locator('role=button[name="▶ Watch it"]').count()) === 0; k++) { await page.click('text=/Next ›|Skip to next ›/'); await settle(); }
+  expect('player has a Watch it button on a move with a demo', await page.locator('role=button[name="▶ Watch it"]').count(), 1);
+  await page.click('role=button[name="▶ Watch it"]');
+  await page.waitForSelector('text=Demonstrations play right here');
+  expect('no YouTube iframe until a demo is tapped', await page.locator('iframe').count(), 0);
+  await page.locator('.sheet button.btn.block').first().click();
+  await page.waitForSelector('iframe');
+  expect('tapping a demo loads the official embed', /youtube-nocookie\.com\/embed\//.test(await page.locator('iframe').first().getAttribute('src')), true);
+  await shot(page, '05a_watch_sheet');
+  await page.keyboard.press('Escape');
+  await page.waitForSelector('.sheet', { state: 'detached' });
   await page.click('role=button[name="Stop"]');
   await page.click('role=button[name="Out of time"]');
   await page.waitForURL(/\/sessions\//);
@@ -150,6 +162,8 @@ const shot = (page, name) => page.screenshot({ path: path.join(shotsDir, `${name
   await page.waitForSelector('text=How to do it');
   expect('crossover page says why, for a shortstop', /ball in the hole/.test(await body()), true);
   expect('crossover page has its drawing', await page.locator('.figure svg').count(), 1);
+  expect('crossover page has a Watch it card with the Ripken demo', /Watch it/i.test(await body()) && /Pivot Crossover/.test(await body()), true);
+  expect('athlete view has no clip upload button', await page.locator('text=Add a clip of him').count(), 0);
   await shot(page, '05b_shortstop_crossover');
   await page.goto(URL + '#/progress');
   await page.waitForSelector('text=Progress');
