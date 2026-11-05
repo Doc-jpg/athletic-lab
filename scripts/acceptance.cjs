@@ -127,6 +127,30 @@ const shot = (page, name) => page.screenshot({ path: path.join(shotsDir, `${name
   expect('offline: exercise page with illustration', await page.locator('.figure svg').count(), 1);
   await shot(page, '05_exercise_offline');
   await ctx.setOffline(false);
+
+  // --- Shortstop Movement on a yellow day: offered the gate, one set each, no bound or hop ---
+  console.log('Shortstop Movement');
+  await page.goto(URL + '#/workouts');
+  await page.waitForSelector('text=Every exercise');
+  expect('Shortstop Movement is listed with the other sessions', /Shortstop Movement/.test(await body()), true);
+  await page.click('text=Shortstop Movement');
+  await page.waitForSelector('text=Different from the recommendation');
+  await page.click('role=button[name="Do it anyway"]');
+  await page.waitForURL(/\/workout\//);
+  await settle();
+  t = await body();
+  expect('shortstop session opened on a yellow day', /Shortstop Movement · 1 of/.test(t), true);
+  const ssCount = await page.locator('.progress-dots i').count();
+  expect('yellow day drops the bound, the hop and the sprint starts (15 items become 9)', ssCount, 9);
+  expect('one set each on a yellow day', /Lighter day: one set/.test(t), true);
+  await page.click('role=button[name="Stop"]');
+  await page.click('role=button[name="Out of time"]');
+  await page.waitForURL(/\/sessions\//);
+  await page.goto(URL + '#/exercises/ss-crossover');
+  await page.waitForSelector('text=How to do it');
+  expect('crossover page says why, for a shortstop', /ball in the hole/.test(await body()), true);
+  expect('crossover page has its drawing', await page.locator('.figure svg').count(), 1);
+  await shot(page, '05b_shortstop_crossover');
   await page.goto(URL + '#/progress');
   await page.waitForSelector('text=Progress');
   t = await body();

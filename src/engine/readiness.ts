@@ -14,7 +14,7 @@
  * intense basketball, sprinting or running blocks extra jumping, sprinting and hard leg work.
  */
 import type { CheckIn, SportsLog, Session, LoadTag, ReadinessColor, Day, SessionKind, Settings } from './types';
-import { addDays, daysBetween } from './types';
+import { addDays, daysBetween, DEMANDING_KINDS } from './types';
 
 export interface ReadinessInput {
   day: Day;
@@ -146,10 +146,11 @@ export function assessReadiness(input: ReadinessInput): Readiness {
 
   // Recent training: strength inside 48 hours, strength count this week, rest day this week.
   const done = sessions.filter((s) => s.status === 'done');
-  const lastStrength = done.filter((s) => s.kind === 'strength' && s.day <= day).sort((a, b) => b.day.localeCompare(a.day))[0];
+  // Strength and Shortstop Movement both load the legs: 48 hours between any two, and both count against the weekly cap.
+  const lastStrength = done.filter((s) => DEMANDING_KINDS.includes(s.kind) && s.day <= day).sort((a, b) => b.day.localeCompare(a.day))[0];
   const hoursSinceStrength = lastStrength ? daysBetween(lastStrength.day, day) * 24 : Infinity;
   const weekStart = addDays(day, -6);
-  const strengthThisWeek = done.filter((s) => s.kind === 'strength' && s.day >= weekStart && s.day < day).length;
+  const strengthThisWeek = done.filter((s) => DEMANDING_KINDS.includes(s.kind) && s.day >= weekStart && s.day < day).length;
   const activeDays = new Set<Day>();
   for (let i = 1; i <= 6; i++) {
     const d = addDays(day, -i);
@@ -188,18 +189,19 @@ export function assessReadiness(input: ReadinessInput): Readiness {
     offer = { templateId: 'light', name: 'Light day', kind: 'light', reduced: true };
   } else {
     const planned = input.planned ?? { kind: 'strength', templateId: 'strength-a', name: 'Strength A' };
-    if (planned.kind === 'strength' && hoursSinceStrength < 48) {
-      reasons.push(`Strength was ${hoursSinceStrength === 0 ? 'today' : 'yesterday'}; muscles get 48 hours between strength days, so today is coordination.`);
+    const demanding = DEMANDING_KINDS.includes(planned.kind);
+    if (demanding && hoursSinceStrength < 48) {
+      reasons.push(`${lastStrength?.kind === 'movement' ? 'Shortstop Movement' : 'Strength'} was ${hoursSinceStrength === 0 ? 'today' : 'yesterday'}; legs get 48 hours between demanding days, so today is coordination.`);
       offer = { templateId: 'coordination', name: 'Athletic coordination', kind: 'coordination', reduced: false };
-    } else if (planned.kind === 'strength' && strengthThisWeek >= settings.strengthDaysPerWeek) {
-      reasons.push(`Already ${strengthThisWeek} strength sessions this week (the plan is ${settings.strengthDaysPerWeek}), so today is coordination or a light day.`);
+    } else if (demanding && strengthThisWeek >= settings.strengthDaysPerWeek) {
+      reasons.push(`Already ${strengthThisWeek} strength or movement sessions this week (the plan is ${settings.strengthDaysPerWeek}), so today is coordination or a light day.`);
       offer = { templateId: 'coordination', name: 'Athletic coordination', kind: 'coordination', reduced: false };
     } else {
       offer = { templateId: planned.templateId, name: planned.name, kind: planned.kind, reduced: false };
     }
-    // Blocks can take the planned session apart; coordination is legs, strength A is legs and arms.
-    if (offer.kind === 'coordination' && blocked.has('legs')) {
-      reasons.push('Legs are spoken for today, so the session is a light one instead of coordination.');
+    // Blocks can take the planned session apart; coordination and Shortstop Movement are all legs.
+    if ((offer.kind === 'coordination' || offer.kind === 'movement') && blocked.has('legs')) {
+      reasons.push(`Legs are spoken for today, so the session is a light one instead of ${offer.kind === 'movement' ? 'Shortstop Movement' : 'coordination'}.`);
       offer = { templateId: 'light', name: 'Light day', kind: 'light', reduced: true };
     }
   }

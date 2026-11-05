@@ -26,7 +26,7 @@ export function ExercisePage() {
         <div className="small muted">Usual dose {doseText(e.defaultDose)}{e.maxDose ? ` · the app never goes past ${e.maxDose.sets} sets${e.maxDose.reps ? ` of ${e.maxDose.reps}` : e.maxDose.seconds ? ` of ${e.maxDose.seconds} sec` : ''}` : ''}</div>
         <Figure pose={e.pose} />
         <p><strong>Builds:</strong> {e.develops}</p>
-        <p><strong>Why it matters beyond sports:</strong> {e.why}</p>
+        <p><strong>{e.area === 'infield' ? 'Why it matters at short:' : 'Why it matters beyond sports:'}</strong> {e.why}</p>
       </div>
       <div className="card">
         <h3>How to do it</h3>

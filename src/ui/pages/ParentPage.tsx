@@ -105,7 +105,7 @@ export function ParentPage() {
                 );
               })}
             </div>
-            <p className="small muted mt">Strength sessions this week: {weekSessions.filter((s) => s.kind === 'strength' && s.status === 'done').length} of {settings.strengthDaysPerWeek} planned. Recovery or red days: {weekCheckIns.filter((c) => c.color === 'orange' || c.color === 'red').length}.</p>
+            <p className="small muted mt">Strength and movement sessions this week: {weekSessions.filter((s) => (s.kind === 'strength' || s.kind === 'movement') && s.status === 'done').length} of {settings.strengthDaysPerWeek} planned. Recovery or red days: {weekCheckIns.filter((c) => c.color === 'orange' || c.color === 'red').length}.</p>
           </div>
           <div className="card">
             <h3>Progress</h3>
@@ -150,7 +150,7 @@ export function ParentPage() {
           <SyncCard full />
           <div className="card">
             <h3>Training</h3>
-            <div className="switch"><div><strong>Strength days per week</strong><div className="small muted">Two or three, never on consecutive days. The app enforces 48 hours between them.</div></div><div className="row"><button className={`btn sm ${settings.strengthDaysPerWeek === 2 ? 'primary' : ''}`} onClick={() => saveSettings({ strengthDaysPerWeek: 2 })}>2</button><button className={`btn sm ${settings.strengthDaysPerWeek === 3 ? 'primary' : ''}`} onClick={() => saveSettings({ strengthDaysPerWeek: 3 })}>3</button></div></div>
+            <div className="switch"><div><strong>Strength and movement days per week</strong><div className="small muted">Two or three, never on consecutive days. Strength A, Strength B and Shortstop Movement all count; the app keeps 48 hours between any two.</div></div><div className="row"><button className={`btn sm ${settings.strengthDaysPerWeek === 2 ? 'primary' : ''}`} onClick={() => saveSettings({ strengthDaysPerWeek: 2 })}>2</button><button className={`btn sm ${settings.strengthDaysPerWeek === 3 ? 'primary' : ''}`} onClick={() => saveSettings({ strengthDaysPerWeek: 3 })}>3</button></div></div>
             <div className="switch"><div><strong>Growth-spurt mode</strong><div className="small muted">Holds every progression and leans on balance and mobility while coordination catches up. Turn on when he shoots up; off a few weeks later.</div></div><input type="checkbox" checked={!!athlete.growthSpurtMode} onChange={(e) => updateAthlete({ growthSpurtMode: e.target.checked })} /></div>
             <div className="switch"><div><strong>Program start</strong><div className="small muted">{fmtDate(athlete.programStart)}. Phases count from here.</div></div><button className="btn sm" onClick={() => updateAthlete({ programStart: day })}>Restart today</button></div>
           </div>

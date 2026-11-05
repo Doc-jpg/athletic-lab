@@ -29,7 +29,7 @@ export function readinessFor(ctx: TodayContext): Readiness {
     logs: ctx.logs,
     sessions: ctx.sessions,
     settings: { strengthDaysPerWeek: ctx.strengthDaysPerWeek },
-    planned: { kind: 'strength', templateId: planned.id, name: planned.name }
+    planned: { kind: planned.kind, templateId: planned.id, name: planned.name }
   });
 }
 

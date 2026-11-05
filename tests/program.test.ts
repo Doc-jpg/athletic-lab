@@ -141,10 +141,12 @@ describe('session building from a template', () => {
     expect(changes.join(' ')).toMatch(/turned off/);
   });
 
-  it('A and B alternate', () => {
+  it('A and B alternate with Shortstop Movement between them', () => {
     expect(nextStrengthTemplate([], LIBRARY_TEMPLATES).id).toBe('strength-a');
-    expect(nextStrengthTemplate([doneSession(DAY, 'strength-a', [])], LIBRARY_TEMPLATES).id).toBe('strength-b');
-    expect(nextStrengthTemplate([doneSession(DAY, 'strength-b', [])], LIBRARY_TEMPLATES).id).toBe('strength-a');
+    expect(nextStrengthTemplate([doneSession(DAY, 'strength-a', [])], LIBRARY_TEMPLATES).id).toBe('shortstop');
+    const m = { ...doneSession(addDays(DAY, 2), 'shortstop', []), kind: 'movement' as const };
+    expect(nextStrengthTemplate([doneSession(DAY, 'strength-a', []), m], LIBRARY_TEMPLATES).id).toBe('strength-b');
+    expect(nextStrengthTemplate([doneSession(DAY, 'strength-b', []), { ...m, day: addDays(DAY, 2) }], LIBRARY_TEMPLATES).id).toBe('strength-a');
   });
 
   it('starter sessions are about the length the prompt asked for', () => {

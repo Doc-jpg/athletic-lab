@@ -4,7 +4,7 @@
  */
 import type { WorkoutTemplate } from '../engine/types';
 
-export const TEMPLATES_VERSION = 1;
+export const TEMPLATES_VERSION = 2;
 const TS = '2026-11-02T00:00:00.000Z';
 
 const t = (x: Omit<WorkoutTemplate, 'source' | 'version' | 'createdAt' | 'updatedAt'>): WorkoutTemplate => ({ ...x, source: 'library', version: TEMPLATES_VERSION, createdAt: TS, updatedAt: TS });
@@ -46,6 +46,31 @@ export const LIBRARY_TEMPLATES: WorkoutTemplate[] = [
       { exerciseId: 'core-birddog', dose: { sets: 2, reps: 6, perSide: true } },
       { exerciseId: 'core-sideplank-knees', dose: { sets: 1, seconds: 10, perSide: true } },
       { exerciseId: 'up-curl', dose: { sets: 1, reps: 8 }, optional: true, requiresFormCheck: true, note: 'Optional, light, and only if a parent has approved it.' },
+      { exerciseId: 'cd-stretch', dose: { sets: 1, seconds: 90 } }
+    ]
+  }),
+  t({
+    id: 'shortstop',
+    name: 'Shortstop Movement',
+    kind: 'movement',
+    sequence: 'M',
+    minutes: 27,
+    summary: 'Move like a shortstop: footwork and first step, lateral strength and power, hip mobility. About 25 to 30 minutes, body weight only, on a fresh day.',
+    items: [
+      { exerciseId: 'wu-march', dose: { sets: 1, seconds: 45 } },
+      { exerciseId: 'wu-legswing', dose: { sets: 1, reps: 10, perSide: true } },
+      { exerciseId: 'wu-skip', dose: { sets: 2, seconds: 20 } },
+      { exerciseId: 'ss-ready', dose: { sets: 2, seconds: 20 } },
+      { exerciseId: 'ss-quickfeet', dose: { sets: 3, seconds: 15 } },
+      { exerciseId: 'ss-crossover', dose: { sets: 2, reps: 4, perSide: true } },
+      { exerciseId: 'ss-dropstep', dose: { sets: 2, reps: 4, perSide: true } },
+      { exerciseId: 'ss-hipturn', dose: { sets: 3, reps: 4 } },
+      { exerciseId: 'ss-hinge', dose: { sets: 2, reps: 8 } },
+      { exerciseId: 'ss-latlunge', dose: { sets: 2, reps: 6, perSide: true } },
+      { exerciseId: 'ss-skater', dose: { sets: 2, reps: 4, perSide: true }, optional: true, note: 'Only when legs feel fresh. Stick every landing for two seconds.' },
+      { exerciseId: 'ss-ninety', dose: { sets: 1, reps: 6, perSide: true } },
+      { exerciseId: 'ss-carioca', dose: { sets: 2, reps: 1, perSide: true } },
+      { exerciseId: 'mob-hip', dose: { sets: 1, seconds: 20, perSide: true } },
       { exerciseId: 'cd-stretch', dose: { sets: 1, seconds: 90 } }
     ]
   }),

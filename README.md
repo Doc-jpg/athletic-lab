@@ -11,8 +11,8 @@ A personal strength, mobility, athleticism and healthy-habits app for one young 
 
 1. **Daily readiness check-in** (sports played, how long and how hard, throwing or pitching with a pitch count, heavy running, tournament; energy, sleep, soreness; pain, sick, dizzy). Thirty seconds, sensible defaults.
 2. **Readiness engine** turns that plus the last four weeks into Green (planned session), Yellow (lighter, one set each, nothing weighted), Orange (recovery only) or Red (no workout, tell a parent), and always says why. Heavy throwing blocks arm and shoulder loading today and tomorrow (longer after a pitch count, per Pitch Smart); intense basketball or running blocks jumps, sprints and hard leg work; tournaments force recovery; 48 hours between strength sessions; a weekly strength cap; a rest-day check; a cumulative-load brake.
-3. **Original exercise library** (50 exercises: warm-up, lower, upper, core, balance, coordination, mobility, cooldown) with what each builds, why it matters beyond sports, steps, cues, common mistakes, when to skip, easier and harder versions, substitutes, and a drawn demonstration.
-4. **Starter program:** Strength A, Strength B, Athletic coordination, Daily Foundations (3 to 6 minutes), Light day, Recovery. Editable templates, never prescriptions.
+3. **Original exercise library** (60 exercises: warm-up, lower, upper, core, balance, coordination, shortstop movement, mobility, cooldown) with what each builds, why it matters beyond sports, steps, cues, common mistakes, when to skip, easier and harder versions, substitutes, and a drawn demonstration.
+4. **Starter program:** Strength A, Strength B, Shortstop Movement (infield footwork, lateral strength, hip mobility; rotates between A and B), Athletic coordination, Daily Foundations (3 to 6 minutes), Light day, Recovery. Editable templates, never prescriptions.
 5. **Progression** by phase (learn, build, refine, four-week blocks with a review week): a few reps, then a set, only after two easy completed sessions, never past the cap, never an automatic weight. Weights appear as a choice only after a parent form-checks and approves them per exercise.
 6. **Workout player:** one exercise at a time, one tap per set, hold and rest timers, easier/harder swaps, pause, quick notes, and a Stop that treats pain, dizziness and illness as a parent matter.
 7. **Journal, calendar and progress** against his own history only. **Badges** that are never taken away; **weekly missions** that simply expire.
@@ -24,7 +24,7 @@ A personal strength, mobility, athleticism and healthy-habits app for one young 
 
 ```
 npm ci
-npm test                      # 58 vitest tests incl. the prompt's acceptance tests
+npm test                      # 76 vitest tests incl. the prompt's acceptance tests
 npm run build && node server.cjs
 URL=http://localhost:4175/ node scripts/acceptance.cjs          # iPhone 13 walkthrough from an empty phone
 DEVICE="Pixel 5" URL=http://localhost:4175/ node scripts/acceptance.cjs

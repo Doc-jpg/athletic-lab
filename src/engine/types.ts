@@ -134,13 +134,13 @@ export const DEFAULT_SETTINGS: Settings = {
 // Exercise catalog
 // ---------------------------------------------------------------------------
 
-export type Area = 'lower' | 'upper' | 'core' | 'balance' | 'mobility' | 'coordination' | 'warmup' | 'cooldown' | 'breathing';
+export type Area = 'lower' | 'upper' | 'core' | 'balance' | 'mobility' | 'coordination' | 'infield' | 'warmup' | 'cooldown' | 'breathing';
 export type Level = 'beginner' | 'intermediate' | 'advanced';
 export type Load = 'body' | 'db5' | 'db10';
 /** Which part of the body an exercise loads; the readiness engine blocks tags by the day's sport. */
 export type LoadTag = 'arm' | 'shoulder' | 'legs' | 'jump' | 'sprint' | 'rotation' | 'core' | 'spine';
 export type Equipment = 'none' | 'chair' | 'step' | 'wall' | 'dumbbell' | 'floor' | 'ball' | 'cone';
-export type Pose = 'squat' | 'chairsquat' | 'splitsquat' | 'stepup' | 'bridge' | 'calfraise' | 'wallpush' | 'inclinepush' | 'pushup' | 'row' | 'curl' | 'scap' | 'deadbug' | 'birddog' | 'sideplank' | 'plank' | 'curlup' | 'rotation' | 'antirotation' | 'balance' | 'heeltoe' | 'crossbody' | 'lateral' | 'reaction' | 'ankle' | 'hip' | 'thoracic' | 'hamstring' | 'shoulder' | 'breathe' | 'catcow' | 'march' | 'skip' | 'shuffle' | 'accel' | 'landing' | 'jog' | 'walk';
+export type Pose = 'squat' | 'chairsquat' | 'splitsquat' | 'stepup' | 'bridge' | 'calfraise' | 'wallpush' | 'inclinepush' | 'pushup' | 'row' | 'curl' | 'scap' | 'deadbug' | 'birddog' | 'sideplank' | 'plank' | 'curlup' | 'rotation' | 'antirotation' | 'balance' | 'heeltoe' | 'crossbody' | 'lateral' | 'reaction' | 'ankle' | 'hip' | 'thoracic' | 'hamstring' | 'shoulder' | 'breathe' | 'catcow' | 'march' | 'skip' | 'shuffle' | 'accel' | 'landing' | 'jog' | 'walk' | 'ready' | 'crossover' | 'dropstep' | 'hipturn' | 'latlunge' | 'hinge' | 'skater' | 'quickfeet' | 'ninety' | 'carioca';
 
 export interface Dose {
   sets: number;
@@ -203,7 +203,9 @@ export interface ExerciseStatus {
 // Workout templates and sessions
 // ---------------------------------------------------------------------------
 
-export type SessionKind = 'strength' | 'coordination' | 'foundations' | 'light' | 'recovery';
+export type SessionKind = 'strength' | 'movement' | 'coordination' | 'foundations' | 'light' | 'recovery';
+/** Sessions that load the legs enough to need 48 hours between them and to count against the weekly cap. */
+export const DEMANDING_KINDS: SessionKind[] = ['strength', 'movement'];
 
 export interface TemplateItem {
   exerciseId: string;
@@ -221,8 +223,8 @@ export interface WorkoutTemplate {
   minutes: number;
   summary: string;
   items: TemplateItem[];
-  /** Strength A and B alternate. */
-  sequence?: 'A' | 'B';
+  /** Strength A and B alternate; 'M' is the movement session that sits between them. */
+  sequence?: 'A' | 'B' | 'M';
   source: 'library' | 'custom';
   version: number;
   createdAt: Iso;

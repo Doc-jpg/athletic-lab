@@ -326,6 +326,10 @@ Each rule names the source it rests on. "Design choice" marks where the app is s
 
 ---
 
+## Shortstop Movement (added 2026-11-05)
+
+What the section rests on: the infield footwork patterns in the Shortstop Movement session (ready position with a prep step or hop timed to contact, crossover step and drop step starts, opening the hips to the ball, fielding from a hip hinge with a flat back, carioca for hip rotation on the move) are the standard patterns taught in youth and high-school infield instruction and are described in general terms across coaching education material; none are proprietary. The strength and power pieces follow the youth rules above: lateral lunge and hip hinge are bodyweight patterns in the 6 to 10 rep range (NSCA 2009, AAP handout); the skater bound is low-height, low-volume (2 sets of 4 a side, under the NSCA jump range of 1 to 3 sets of 3 to 6) with a two-second stuck landing, which keeps it a landing-control drill rather than a plyometric volume drill; the prep hop is a timing move an inch off the ground, not a jump. Same-day hard basketball, running or tournament play removes the bound, the hop and the sprint starts, per the overuse rules above. Nothing is loaded; the no-loaded-twisting rule is kept (the 90/90 switch and carioca are unloaded mobility). Written in original words for this app.
+
 ## Original exercise content check (standing rule)
 
 Every exercise name, cue, description, set and rep prescription and session template in the app's library is written in original words for this app. Nothing is copied, paraphrased closely, or reconstructed from Armored Heat, the ChatGPT conversation, any commercial program, or any book or course. Published position statements are used only for the numeric ranges and safety rules listed above, which are general guidance, not program content. Before any library item ships, it is checked against this rule, and the check is recorded in the app's content log.

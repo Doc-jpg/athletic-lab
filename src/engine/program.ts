@@ -7,7 +7,7 @@
  * weight increase, and nothing added in the learn phase or in growth-spurt mode.
  */
 import type { Athlete, Day, Dose, Exercise, ExerciseStatus, Load, LoadTag, Session, SessionItem, SessionKind, WorkoutTemplate, Who } from './types';
-import { daysBetween, newId, nowIso } from './types';
+import { daysBetween, newId, nowIso, DEMANDING_KINDS } from './types';
 import type { Readiness } from './readiness';
 
 export type Phase = 'learn' | 'build' | 'refine' | 'develop' | 'review';
@@ -30,13 +30,22 @@ export function programPhase(programStart: Day, day: Day): PhaseInfo {
   return { phase: 'develop', week, label: `Development block, week ${inBlock + 1} of 4`, text: 'Steady development: small additions only where form and recovery support them.' };
 }
 
-/** Strength A and B alternate; the next one is whichever was not the last strength session done. */
+/**
+ * The rotation of demanding sessions: Strength A, Shortstop Movement, Strength B, Shortstop Movement, ...
+ * so movement comes once or twice a week inside the weekly cap. After a strength session the next
+ * is movement; after movement the next is whichever strength session was not the last one done.
+ */
 export function nextStrengthTemplate(sessions: Session[], templates: WorkoutTemplate[]): WorkoutTemplate {
   const a = templates.find((t) => t.sequence === 'A' && !t.archived) ?? templates[0];
   const b = templates.find((t) => t.sequence === 'B' && !t.archived) ?? a;
-  const last = sessions.filter((s) => s.status === 'done' && s.kind === 'strength').sort((x, y) => (y.day + y.createdAt).localeCompare(x.day + x.createdAt))[0];
+  const m = templates.find((t) => t.sequence === 'M' && !t.archived);
+  const done = sessions.filter((s) => s.status === 'done' && DEMANDING_KINDS.includes(s.kind)).sort((x, y) => (y.day + y.createdAt).localeCompare(x.day + x.createdAt));
+  const last = done[0];
   if (!last) return a;
-  return last.templateId === a.id ? b : a;
+  if (last.kind === 'strength' && m) return m;
+  const lastStrength = done.find((s) => s.kind === 'strength');
+  if (!lastStrength) return a;
+  return lastStrength.templateId === a.id ? b : a;
 }
 
 export interface BuildContext {

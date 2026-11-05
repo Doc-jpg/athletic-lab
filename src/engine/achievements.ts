@@ -21,7 +21,7 @@ export interface BadgeState {
 }
 
 const done = (s: BadgeState, kind?: Session['kind']) => s.sessions.filter((x) => x.status === 'done' && (!kind || x.kind === kind));
-const workouts = (s: BadgeState) => done(s).filter((x) => x.kind === 'strength' || x.kind === 'coordination' || x.kind === 'light');
+const workouts = (s: BadgeState) => done(s).filter((x) => x.kind === 'strength' || x.kind === 'movement' || x.kind === 'coordination' || x.kind === 'light');
 
 export const BADGES: BadgeDef[] = [
   { key: 'first-checkin', title: 'Checked in', text: 'First readiness check-in. Knowing how you feel is step one.', test: (s) => s.checkIns.length >= 1 },
@@ -39,6 +39,8 @@ export const BADGES: BadgeDef[] = [
   { key: 'journal-5', title: 'Thinker', text: 'Five journal notes. Noticing how things feel is how you get better at them.', test: (s) => s.journal.length >= 5 },
   { key: 'three-week', title: 'Three in a week', text: 'Three sessions in one week.', test: (s) => { for (let i = 0; i < 28; i++) { const end = addDays(s.day, -i); const start = addDays(end, -6); if (workouts(s).filter((x) => x.day >= start && x.day <= end).length >= 3) return true; } return false; } },
   { key: 'coord-first', title: 'Quick feet', text: 'First athletic coordination session.', test: (s) => done(s, 'coordination').length >= 1 },
+  { key: 'shortstop-first', title: 'Six on the field', text: 'First Shortstop Movement session.', test: (s) => done(s, 'movement').length >= 1 },
+  { key: 'shortstop-10', title: 'Range', text: 'Ten Shortstop Movement sessions. The first step is getting automatic.', test: (s) => done(s, 'movement').length >= 10 },
   { key: 'habits-10', title: 'Habit builder', text: 'Ten healthy habits checked off.', test: (s) => s.habits.filter((h) => h.done).length >= 10 }
 ];
 

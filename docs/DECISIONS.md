@@ -2,6 +2,18 @@
 
 Newest first. Append here; this is where the next session starts.
 
+## 2026-11-05, Shortstop Movement (Deren: "I want Eli to move like a shortstop")
+
+Two coaches who evaluated Eli this fall said the same thing: quick feet and a good glove, needs more strength and better infield footwork. The library covered general athleticism; nothing was specific to a middle infielder.
+
+- **Ten new exercises** in a new area, "Shortstop movement" (`infield`): ready position hold and prep hop, crossover step starts, drop step starts, hip turn to the ball (visual cue), lateral lunge, bodyweight hip hinge, skater bound and stick, quick-feet pattern (no ladder), 90/90 hip switches, carioca. Same format as the rest; each "why" is written for Eli and tied to playing short ("This is the first step to a ball in the hole"). The exercise page labels it "Why it matters at short".
+- **New template "Shortstop Movement"**, kind `movement`, 27 minutes, body weight only: warm-up (march, leg swings, easy skips), footwork and first step (ready and prep hop, quick feet, crossover, drop step, hip turn), lateral strength and power (hinge, lateral lunge, skater bound as optional), hip mobility (90/90, carioca, half-kneeling hip opener), cooldown.
+- **Rotation:** A, Shortstop, B, Shortstop, A... so it comes once or twice a week inside the weekly cap. `DEMANDING_KINDS` = strength + movement: the 48-hour rule and the weekly cap treat them alike; the parent setting now reads "Strength and movement days per week".
+- **Gates unchanged and applied:** prep hop and skater bound carry the `jump` tag, the starts carry `sprint`, so a hard basketball, running or tournament day takes them out the same way as the existing jump work; yellow = one set each and the jumps and sprints out (9 of 15 items remain); orange = recovery; red = nothing. Progression rules unchanged (learn holds; +2 reps or +5 seconds after two easy completed sessions; caps per exercise; growth-spurt mode holds). No loads anywhere on these ten (library test enforces `loads === ['body']`).
+- Two badges: first Shortstop Movement session, ten sessions.
+- Tests: `tests/shortstop.test.ts` (10 tests: library gates, template shape and length, green build, hard-basketball block, yellow reduction, red, rotation, 48-hour and weekly cap, progression, hold/bound progress by time and reps only). Walkthrough adds the yellow-day Shortstop session (gate sheet, one set each, 9 items) and the crossover exercise page. 76 unit tests, both device walks green.
+- Research note: the drills are standard infield footwork patterns taught in youth baseball (crossover, drop step, prep step, carioca) written in original words; no program was copied. RESEARCH.md gained a short section.
+
 ## 2026-11-02 (afternoon), automatic sync (Deren: "I want whatever he does to auto send")
 
 Deren refused the file-based parent pack: he does not want to get on Eli's phone, and Eli should never have to submit anything. He asked that whatever Eli does upload on its own.

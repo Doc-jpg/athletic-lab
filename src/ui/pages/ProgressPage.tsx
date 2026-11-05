@@ -35,7 +35,7 @@ export function ProgressPage() {
   const foundationsPerWeek = weeks.map((w) => done.filter((s) => s.kind === 'foundations' && s.day >= w && s.day <= addDays(w, 6)).length);
 
   // Key exercise trend.
-  const tracked = ['bal-single', 'up-inclinepush', 'lo-chairsquat', 'core-plank-knees', 'core-sideplank-knees', 'lo-bridge', 'up-kneepush', 'up-pushup', 'lo-squat'].filter((id) => done.some((s) => s.items.some((i) => i.exerciseId === id && i.sets.some((x) => x.done))));
+  const tracked = ['bal-single', 'up-inclinepush', 'lo-chairsquat', 'core-plank-knees', 'core-sideplank-knees', 'lo-bridge', 'up-kneepush', 'up-pushup', 'lo-squat', 'ss-latlunge', 'ss-quickfeet', 'ss-ready', 'ss-skater'].filter((id) => done.some((s) => s.items.some((i) => i.exerciseId === id && i.sets.some((x) => x.done))));
   const trend = done.filter((s) => s.items.some((i) => i.exerciseId === exId && i.sets.some((x) => x.done))).sort((a, b) => a.day.localeCompare(b.day)).map((s) => { const it = s.items.find((i) => i.exerciseId === exId)!; const d = it.sets.filter((x) => x.done); return { day: s.day, v: it.planned.seconds !== undefined ? Math.max(...d.map((x) => x.seconds ?? 0)) : d.reduce((a, x) => a + (x.reps ?? 0), 0), unit: it.planned.seconds !== undefined ? 'best hold (sec)' : 'total reps' }; });
 
   // Push-up level: highest variant done.
