@@ -68,7 +68,7 @@ export function HabitsPage() {
         {thisWeek.length === 0 && <div className="small muted">Missions appear after your first check-in of the week.</div>}
         {thisWeek.map((m) => <div key={m.id} className="card mission"><div className="row between"><strong>{m.title}</strong>{m.doneAt ? <span className="pill green">Done</span> : <span className="small muted">{m.progress} of {m.target}</span>}</div><div className="small muted">{m.text}</div><div className="bar"><div style={{ width: `${Math.round((100 * m.progress) / m.target)}%` }} /></div></div>)}
       </div>
-      <p className="small muted">Three new ones every Monday. Unfinished missions just go away; nothing is lost.</p>
+      <p className="small muted">Three new ones every Sunday. Unfinished missions just go away; nothing is lost.</p>
 
       {activeSupps.length > 0 && (
         <div className="card">

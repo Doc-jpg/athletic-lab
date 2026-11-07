@@ -51,11 +51,10 @@ export function newBadges(state: BadgeState, have: Achievement[]): Achievement[]
   return BADGES.filter((b) => !owned.has(b.key) && b.test(state)).map((b) => ({ id: newId(), key: b.key, title: b.title, text: b.text, earnedAt: ts }));
 }
 
-/** Monday of the week containing `day`. */
+/** Sunday of the week containing `day` (Sunday is the first day of the week in this house). */
 export function weekStartOf(day: Day): Day {
   const d = new Date(day + 'T12:00:00');
-  const dow = (d.getDay() + 6) % 7; // Monday = 0
-  return addDays(day, -dow);
+  return addDays(day, -d.getDay());
 }
 
 interface MissionDef {

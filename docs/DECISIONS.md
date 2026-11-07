@@ -2,6 +2,9 @@
 
 Newest first. Append here; this is where the next session starts.
 
+## 2026-11-07, v0.5.2, Sunday first (Deren: "Sunday is the first day of the week in my mind")
+The Progress calendar and the mission week now run Sunday to Saturday, matching Dad Lab. New missions arrive on Sunday.
+
 ## 2026-11-05 (later), animated drawings, demonstration videos and the family's own clips (Deren: "would a 12-year-old who has never seen these moves understand the drawings?")
 
 The honest answer was no, not for footwork: a single stick-figure frame shows a shape, not a movement. Three things changed in v0.5.0.
