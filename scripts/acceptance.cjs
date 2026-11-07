@@ -23,21 +23,21 @@ const shot = (page, name) => page.screenshot({ path: path.join(shotsDir, `${name
   // --- Setup (three steps) ---
   console.log('Setup');
   await page.goto(URL);
-  await page.waitForSelector('text=whose phone is this?');
+  await page.waitForSelector('text=whose device is this?');
   expect('setup speaks to the parent first', /for the parent/i.test(await body()), true);
-  await page.click('role=button[name="Next"]');
+  await page.click('text=My athlete\'s device');
   await page.waitForSelector('text=the athlete and you');
   await page.fill('input[placeholder="First name"]', 'Eli');
   await page.fill('input[placeholder="2014"]', '2014');
   await page.fill('input[placeholder="Dad"]', 'Dad');
   await page.fill('input[aria-label="Parent PIN"]', '7101');
   await page.fill('input[aria-label="Parent PIN again"]', '7101');
-  await page.click('role=button[name="Done. Hand the phone over"]');
+  await page.click('role=button[name="Done. Hand it over"]');
   await page.waitForSelector('text=your own phone');
   const codeText = await page.locator('strong.mono').innerText();
   expect('family code shown to the parent', /^[A-Z2-9]{5}-[A-Z2-9]{5}-[A-Z2-9]{5}-[A-Z2-9]{5}$/.test(codeText), true);
   const FAMILY_CODE = codeText;
-  await page.click('role=button[name="Done. Hand the phone over"]');
+  await page.click('role=button[name="Done. Hand it over"]');
   await page.waitForSelector('text=Hey Eli, this is yours');
   expect('PIN is never shown on screen', /7101/.test(await body()), false);
   await page.click('text=Pro sports');
@@ -280,9 +280,8 @@ const shot = (page, name) => page.screenshot({ path: path.join(shotsDir, `${name
   const p2 = await ctx2.newPage();
   p2.on('pageerror', (e) => { fails.push('pageerror ' + e.message); });
   await p2.goto(URL);
-  await p2.waitForSelector('text=whose phone is this?');
-  await p2.click('role=button[name="My own phone (a parent copy)"]');
-  await p2.click('role=button[name="Next"]');
+  await p2.waitForSelector('text=whose device is this?');
+  await p2.click('text=My own phone (a parent copy)');
   await p2.waitForSelector('text=Family code');
   await p2.fill('input[placeholder="XXXXX-XXXXX-XXXXX-XXXXX"]', FAMILY_CODE);
   await p2.fill('input[placeholder="Dad"]', 'Dad');

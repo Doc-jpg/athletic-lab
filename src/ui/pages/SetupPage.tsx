@@ -115,14 +115,12 @@ export function SetupPage() {
 
       {step === 'who' && (
         <div className="card">
-          <h3>For the parent · whose phone is this?</h3>
+          <h3>For the parent · whose device is this?</h3>
           <p className="small muted">Setup takes two minutes and is the parent's part. After it, the app talks to your athlete.</p>
           <div className="col mt">
-            <button className={`btn lg block ${role === 'athlete' ? 'primary' : ''}`} onClick={() => setRole('athlete')}>My athlete's phone (the main one)</button>
-            <button className={`btn lg block ${role === 'parent' ? 'primary' : ''}`} onClick={() => setRole('parent')}>My own phone (a parent copy)</button>
+            <button className="btn lg block" style={{ minHeight: 72, flexDirection: 'column', alignItems: 'flex-start', gap: 2 }} onClick={() => { setRole('athlete'); setStep('parent'); }}><span>My athlete's device (the main one) ›</span><span className="small muted" style={{ fontWeight: 500 }}>He checks in and trains on it. You get a PIN-protected parent view on it too, and a link for your own phone.</span></button>
+            <button className="btn lg block" style={{ minHeight: 72, flexDirection: 'column', alignItems: 'flex-start', gap: 2 }} onClick={() => { setRole('parent'); setStep(SYNC_AVAILABLE ? 'join' : 'parent'); }}><span>My own phone (a parent copy) ›</span><span className="small muted" style={{ fontWeight: 500 }}>{SYNC_AVAILABLE ? 'Set up his device first; it gives you a link or a code. Open the link here, or type the code, and everything he does shows up on its own.' : 'Shows the parent dashboard and receives his records as a file he sends you. Set up his device first.'}</span></button>
           </div>
-          <p className="small muted mt">{role === 'athlete' ? 'He checks in and trains on this phone. You get a PIN-protected parent view on it too, and a link for your own phone.' : SYNC_AVAILABLE ? 'Set up his phone first; it gives you a link or a code. Open the link on this phone, or type the code here, and everything he does shows up here on its own.' : 'A parent copy shows the parent dashboard and receives his records as a file he sends you. Set up his phone first.'}</p>
-          <button className="btn primary lg block mt" onClick={() => setStep(role === 'parent' && SYNC_AVAILABLE ? 'join' : 'parent')}>Next</button>
         </div>
       )}
 
@@ -146,7 +144,7 @@ export function SetupPage() {
             This app is a guide for a healthy kid, not medical advice. Be nearby for every session with a weight and the first run of any new movement. Anything that hurts: stop, and he tells you.
           </div>
           {err && <div className="banner danger small">{err}</div>}
-          <div className="row mt"><button className="btn" onClick={() => setStep('who')}>Back</button><button className="btn primary grow" disabled={busy} onClick={finishParentPart}>{role === 'athlete' ? "Done. Hand the phone over" : 'Finish'}</button></div>
+          <div className="row mt"><button className="btn" onClick={() => setStep('who')}>Back</button><button className="btn primary grow" disabled={busy} onClick={finishParentPart}>{role === 'athlete' ? "Done. Hand it over" : 'Finish'}</button></div>
         </div>
       )}
 
@@ -157,7 +155,7 @@ export function SetupPage() {
           <button className="btn primary lg block" onClick={shareLink}>Send myself the parent link</button>
           <p className="small muted mt">Or type this code on your phone under "My own phone": <strong className="mono">{formatCode(familySecret)}</strong></p>
           <p className="small muted">The link holds a private family code. Keep it to yourself; anyone with it could see his workouts. It is also under the parent view, Linked phones, any time.</p>
-          <button className="btn block mt" onClick={() => setStep('handoff')}>Done. Hand the phone over</button>
+          <button className="btn block mt" onClick={() => setStep('handoff')}>Done. Hand it over</button>
         </div>
       )}
 

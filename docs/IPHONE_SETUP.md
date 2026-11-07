@@ -6,15 +6,15 @@ Two people use this app. **Setup is the parent's job, done once on Eli's phone.*
 1. On Eli's iPhone, open Safari and go to **https://doc-jpg.github.io/athletic-lab/**
 2. Tap **Share** (the square with the arrow), then **Add to Home Screen**, then **Add**. The icon is a navy square with an orange bolt, named "Athletic Lab".
 3. Open it from the home screen (online).
-4. The first screen says it is for the parent. Choose **My athlete's phone**, enter his first name and birth year, tick his sports, type what the app should call you ("Dad"), and type a PIN twice. The PIN is never shown on screen again.
-5. The next screen makes the family link. Tap **Send myself the parent link** and Message or AirDrop it to yourself (or note the 20-character code). Then **Done. Hand the phone over.**
+4. The first screen says it is for the parent. Tap **My athlete's device**, enter his first name and birth year, tick his sports, type what the app should call you ("Dad"), and type a PIN twice. The PIN is never shown on screen again.
+5. The next screen makes the family link. Tap **Send myself the parent link** and Message or AirDrop it to yourself (or note the 20-character code). Then **Done. Hand it over.**
 6. Eli's screen: he picks a look and takes the one-minute tour (or skips it).
 
 From then on Eli opens the app, checks in, and trains. The only parent thing on his screens is the "What Dad can see" card and a line saying his records go to Dad's phone.
 
 ## 2. Your phone (one minute)
 1. Install the same address the same way (Share, Add to Home Screen).
-2. Open the link you sent yourself. It lands on "Parent link": type what the app should call you and a PIN, tap **Connect this phone**. Done. (Or open the app, choose **My own phone**, and type the code.)
+2. Open the link you sent yourself. It lands on "Parent link": type what the app should call you and a PIN, tap **Connect this phone**. Done. (Or open the app, tap **My own phone**, and type the code.)
 3. Settings on your phone has the parent door at the top; the parent view shows his week, alerts, approvals and settings.
 
 ## How the sync works
