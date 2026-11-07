@@ -86,7 +86,12 @@ const shot = (page, name) => page.screenshot({ path: path.join(shotsDir, `${name
       const restSkip = page.locator('role=button[name="Skip rest"]');
       if (await restSkip.count()) await restSkip.click();
     }
-    if (i < total - 1) await page.click('text=/Next ›|Skip to next ›/');
+    if (i < total - 1) {
+      // After the last set the player flashes Done and moves on by itself; wait for that, else skip.
+      const moved = await page.waitForFunction((n) => /·\s*(\d+) of /.test(document.body.innerText) && Number(document.body.innerText.match(/·\s*(\d+) of /)[1]) === n, i + 2, { timeout: 3000 }).then(() => true).catch(() => false);
+      if (!moved) await page.click('text=/Next ›|Skip this one ›/');
+      await settle(150);
+    }
     await settle(150);
   }
   expect('all exercises visited', await page.locator('.progress-dots i.on').count(), total);
@@ -144,7 +149,7 @@ const shot = (page, name) => page.screenshot({ path: path.join(shotsDir, `${name
   expect('yellow day drops the bound, the hop and the sprint starts (15 items become 9)', ssCount, 9);
   expect('one set each on a yellow day', /Lighter day: one set/.test(t), true);
   // The workout player offers a Watch button on moves that have a demo (warm-ups do not); the sheet loads the embed only on tap.
-  for (let k = 0; k < 6 && (await page.locator('role=button[name="▶ Watch it"]').count()) === 0; k++) { await page.click('text=/Next ›|Skip to next ›/'); await settle(); }
+  for (let k = 0; k < 6 && (await page.locator('role=button[name="▶ Watch it"]').count()) === 0; k++) { await page.click('text=/Next ›|Skip this one ›/'); await settle(); }
   expect('player has a Watch it button on a move with a demo', await page.locator('role=button[name="▶ Watch it"]').count(), 1);
   await page.click('role=button[name="▶ Watch it"]');
   await page.waitForSelector('text=Demonstrations play right here');

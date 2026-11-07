@@ -2,6 +2,19 @@
 
 Newest first. Append here; this is where the next session starts.
 
+## 2026-11-07 (evening), v0.6.1, the player did not tell him what to tap (Eli's first real session)
+
+Eli's report, through Deren: it told him what to do and had a timer, then said "Skip to next"; nothing acknowledged he had done the stretch. His summary read "No sets were completed. Skipped: everything." Diagnosis from the code and his screen: the clock at the top was the whole-workout elapsed time, not a stretch timer; the thing that logs a set was a small box below the fold labeled "SET 1 / 30s" that nothing told him to tap; and the only big button was "Skip to next", so that is what he pressed. Design failure, not a user failure.
+
+Fix in both apps (Dad Lab got it as v0.1.5):
+- One big button right under the drawing, always the one thing to do: "▶ Start the 30 second timer" for timed moves (the countdown then sits in the same spot, with Done early), "✓ Did it" for rep moves, "(left set 1 of 2)" when there is more than one. The small set boxes stay underneath for undo only, labeled as such.
+- When the last set is done the card flashes "✓ Done. Next one coming up…" and moves on by itself after about a second and a half (the phone buzzes when a timer ends). On the last move it says "Tap Finish workout."
+- "Skip to next" is now a quiet "Skip this one" and only becomes the bright "Next ›" once the move is done.
+- The elapsed clock reads "4:12 total" in small text so it is not mistaken for the exercise timer.
+- The acceptance walk waits for the auto-advance instead of pressing Next.
+
+Lesson for the design principles: the big button is the instruction. If a 12-year-old can finish a session without logging a thing, the player is wrong, not the kid.
+
 ## 2026-11-07, v0.6.0, something every day, in Eli's words (Deren: "same mentality. Something every day ... this is a 12-year-old who doesn't know movements, doesn't know exercises, doesn't know muscle groups")
 
 - **There is always something.** A red day (pain, sick, dizzy) no longer ends in "No workout today". It offers the **Easy day**: two minutes of slow breathing and, if it feels fine, a one-minute walk around the house; it counts as his day, and "tell a parent" stays on the card. The hard rule is unchanged: nothing loads anything on red, and the Workouts list still refuses the training sessions. The engine's `offer` is never null now (tests updated).

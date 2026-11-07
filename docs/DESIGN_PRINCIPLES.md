@@ -13,3 +13,5 @@ Carried over from Dugout Lab (Deren, 2026-11-02: "blend comprehensiveness, thoro
 9. **Transparent, not surveilled.** Parent mode is behind a PIN and shows exactly what the "What a parent can see" card says. Private notes are private on the phone, in parent mode and in the parent pack.
 10. **Works offline, one-handed, on a phone.** Big targets, bottom sheets, no hover, live state saved on every change so a closed app reopens mid-set.
 11. **Test the path a new kid walks.** `scripts/acceptance.cjs` starts from an empty phone: setup, check-in with pitching, a full workout, offline reload, a journal note offline, a red day, parent mode, backup and restore, the tour.
+
+**Added 2026-11-07, after Eli's first session:** the big button is the instruction. Under the drawing there is always exactly one bright thing to tap (start the timer, did it), the app says Done and moves on by itself, and skipping is a quiet option, never the default. If a kid can get to the end without logging anything, the player is wrong.
