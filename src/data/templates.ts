@@ -4,7 +4,7 @@
  */
 import type { WorkoutTemplate } from '../engine/types';
 
-export const TEMPLATES_VERSION = 2;
+export const TEMPLATES_VERSION = 3;
 const TS = '2026-11-02T00:00:00.000Z';
 
 const t = (x: Omit<WorkoutTemplate, 'source' | 'version' | 'createdAt' | 'updatedAt'>): WorkoutTemplate => ({ ...x, source: 'library', version: TEMPLATES_VERSION, createdAt: TS, updatedAt: TS });
@@ -76,10 +76,10 @@ export const LIBRARY_TEMPLATES: WorkoutTemplate[] = [
   }),
   t({
     id: 'coordination',
-    name: 'Athletic coordination',
+    name: 'Quick feet',
     kind: 'coordination',
     minutes: 12,
-    summary: 'Skips, shuffles, short starts, direction changes and a few soft landings. 10 to 15 minutes on a fresh day, full rest between efforts.',
+    summary: 'Skips, side shuffles, three-step sprint starts, a direction-change game and a few soft landings. 10 to 15 minutes on a fresh day; rest all the way between goes.',
     items: [
       { exerciseId: 'wu-march', dose: { sets: 1, seconds: 45 } },
       { exerciseId: 'wu-legswing', dose: { sets: 1, reps: 10, perSide: true } },
@@ -93,10 +93,10 @@ export const LIBRARY_TEMPLATES: WorkoutTemplate[] = [
   }),
   t({
     id: 'foundations',
-    name: 'Daily Foundations',
+    name: 'Daily 5',
     kind: 'foundations',
     minutes: 5,
-    summary: 'Three to six easy minutes: breathing, cat-cow, trunk rotation, ankles, hips and a little balance. Optional, most days, only when you feel well.',
+    summary: 'Five easy minutes: slow breathing, cat-cow, standing twists, ankles, hips and a little balance. Fine most days, on top of whatever else.',
     items: [
       { exerciseId: 'mob-breathe', dose: { sets: 1, reps: 6 } },
       { exerciseId: 'mob-catcow', dose: { sets: 1, reps: 6 } },
@@ -108,10 +108,10 @@ export const LIBRARY_TEMPLATES: WorkoutTemplate[] = [
   }),
   t({
     id: 'light',
-    name: 'Light day',
+    name: 'Easy workout',
     kind: 'light',
     minutes: 10,
-    summary: 'Mobility, gentle core and technique practice. For days when there was already a fair amount of sport.',
+    summary: 'Stretching, easy belly-and-back moves and balance. For days when there was already a fair amount of sport, or you are a little tired.',
     items: [
       { exerciseId: 'mob-breathe', dose: { sets: 1, reps: 6 } },
       { exerciseId: 'mob-catcow', dose: { sets: 1, reps: 6 } },
@@ -125,10 +125,10 @@ export const LIBRARY_TEMPLATES: WorkoutTemplate[] = [
   }),
   t({
     id: 'recovery',
-    name: 'Recovery',
+    name: 'Five-minute stretch',
     kind: 'recovery',
     minutes: 5,
-    summary: 'Optional comfortable mobility and breathing after a heavy sports day. Skipping it entirely is also a good choice.',
+    summary: 'After a big day of sport, this is the whole workout: breathing, cat-cow, hamstrings, calves, shoulders. Five minutes, then you are done.',
     items: [
       { exerciseId: 'mob-breathe', dose: { sets: 1, reps: 8 } },
       { exerciseId: 'mob-catcow', dose: { sets: 1, reps: 6 } },
@@ -138,5 +138,18 @@ export const LIBRARY_TEMPLATES: WorkoutTemplate[] = [
     ]
   })
 ];
+
+// Appended after the first seven so existing devices get it on the next open (library refresh is by version).
+LIBRARY_TEMPLATES.push(t({
+  id: 'easy',
+  name: 'Easy day',
+  kind: 'recovery',
+  minutes: 3,
+  summary: 'For a day when something hurts or you feel sick: two minutes of slow breathing and, if it feels fine, an easy walk around the house. That counts as your day. Tell a parent how you feel.',
+  items: [
+    { exerciseId: 'mob-breathe', dose: { sets: 1, reps: 10 } },
+    { exerciseId: 'cd-walk', dose: { sets: 1, seconds: 60 }, optional: true }
+  ]
+}));
 
 export const TEMPLATE_BY_ID: Record<string, WorkoutTemplate> = Object.fromEntries(LIBRARY_TEMPLATES.map((x) => [x.id, x]));

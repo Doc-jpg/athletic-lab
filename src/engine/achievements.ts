@@ -32,8 +32,8 @@ export const BADGES: BadgeDef[] = [
   { key: 'fifty-sessions', title: 'Fifty sessions', text: 'Fifty sessions. That is an athlete who takes care of his body.', test: (s) => workouts(s).length >= 50 },
   { key: 'good-call', title: 'Good call', text: 'Took a recovery day when the body asked for it. That is what smart athletes do.', test: (s) => s.checkIns.some((c) => c.color === 'orange' || c.color === 'red') },
   { key: 'stopped-smart', title: 'Stopped smart', text: 'Stopped a session because something did not feel right and told someone. Exactly right.', test: (s) => s.sessions.some((x) => x.status === 'stopped' && (x.stoppedReason === 'pain' || x.stoppedReason === 'dizzy' || x.stoppedReason === 'sick')) },
-  { key: 'foundations-7', title: 'Foundations x7', text: 'Seven Daily Foundations done. A few easy minutes, a lot of days.', test: (s) => done(s, 'foundations').length >= 7 },
-  { key: 'foundations-30', title: 'Foundations x30', text: 'Thirty Foundations. Your hips and ankles thank you.', test: (s) => done(s, 'foundations').length >= 30 },
+  { key: 'foundations-7', title: 'Daily 5 x7', text: 'Seven Daily 5s done. A few easy minutes, a lot of days.', test: (s) => done(s, 'foundations').length >= 7 },
+  { key: 'foundations-30', title: 'Daily 5 x30', text: 'Thirty Daily 5s. Your hips and ankles thank you.', test: (s) => done(s, 'foundations').length >= 30 },
   { key: 'balance-30', title: 'Steady as a rock', text: 'Held a single-leg balance for 30 seconds a side.', test: (s) => done(s).some((x) => x.items.some((i) => i.exerciseId.startsWith('bal-single') && i.sets.some((st) => st.done && (st.seconds ?? 0) >= 30))) },
   { key: 'pushup-level', title: 'Push-up level up', text: 'Moved to a harder push-up version.', test: (s) => done(s).some((x) => x.items.some((i) => i.exerciseId === 'up-kneepush' || i.exerciseId === 'up-pushup')) },
   { key: 'journal-5', title: 'Thinker', text: 'Five journal notes. Noticing how things feel is how you get better at them.', test: (s) => s.journal.length >= 5 },
@@ -68,7 +68,7 @@ interface MissionDef {
 const inWeek = (day: Day, ws: Day) => day >= ws && day <= addDays(ws, 6);
 
 export const MISSIONS: MissionDef[] = [
-  { key: 'foundations-3', title: 'Foundations on 3 days', text: 'Three to six easy minutes, three different days.', target: 3, progress: (s, ws) => new Set(done(s, 'foundations').filter((x) => inWeek(x.day, ws)).map((x) => x.day)).size },
+  { key: 'foundations-3', title: 'Daily 5 on 3 days', text: 'Five easy minutes, three different days.', target: 3, progress: (s, ws) => new Set(done(s, 'foundations').filter((x) => inWeek(x.day, ws)).map((x) => x.day)).size },
   { key: 'journal-1', title: 'Write one note', text: 'One line in the journal about how something felt.', target: 1, progress: (s, ws) => s.journal.filter((j) => inWeek(j.day, ws)).length },
   { key: 'checkin-4', title: 'Check in 4 days', text: 'Open the app and say how you feel on four days.', target: 4, progress: (s, ws) => new Set(s.checkIns.filter((c) => inWeek(c.day, ws)).map((c) => c.day)).size },
   { key: 'balance-chal', title: 'Balance challenge', text: 'Do single-leg balance in any session this week.', target: 1, progress: (s, ws) => done(s).filter((x) => inWeek(x.day, ws) && x.items.some((i) => i.exerciseId.startsWith('bal-') && i.sets.some((st) => st.done))).length },

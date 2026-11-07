@@ -59,7 +59,7 @@ export function ProgressPage() {
       <div className="small muted">Compared with your own earlier sessions only. {phase ? `${phase.label}, week ${phase.week}.` : ''}</div>
       <div className="kpi">
         <div className="k"><div className="v">{workouts.length}</div><div className="l">Sessions</div></div>
-        <div className="k"><div className="v">{done.filter((s) => s.kind === 'foundations').length}</div><div className="l">Foundations</div></div>
+        <div className="k"><div className="v">{done.filter((s) => s.kind === 'foundations').length}</div><div className="l">Daily 5s</div></div>
         <div className="k"><div className="v">{bestBalance ? `${bestBalance}s` : '–'}</div><div className="l">Best balance</div></div>
         <div className="k"><div className="v">{pushLevel >= 0 ? ['Wall', 'Incline', 'Knees', 'Full'][pushLevel] : '–'}</div><div className="l">Push-up level</div></div>
         <div className="k"><div className="v">{recoveryDays}</div><div className="l">Smart rest days</div></div>
@@ -69,7 +69,7 @@ export function ProgressPage() {
       <div className="card">
         <h3>Sessions per week (last 8 weeks)</h3>
         <Bars values={perWeek} labels={weeks.map((w) => fmtDate(w).replace(/^\w+,? /, ''))} max={4} />
-        <div className="small muted">Foundations per week: {foundationsPerWeek.join(' · ')}</div>
+        <div className="small muted">Daily 5 per week: {foundationsPerWeek.join(' · ')}</div>
       </div>
 
       {tracked.length > 0 && (

@@ -41,7 +41,7 @@ export function WorkoutsPage() {
     if (!checkIn) { nav('/today'); return; }
     const t = templates.find((x) => x.id === id);
     if (!t) return;
-    if (readiness?.color === 'red') { setConfirm('red'); return; }
+    if (readiness?.color === 'red' && id !== 'easy') { setConfirm('red'); return; }
     if (readiness?.offer?.templateId !== id && t.kind !== 'foundations' && t.kind !== 'recovery' && t.kind !== 'light') setConfirm(id);
     else startTemplate(id);
   };
@@ -91,10 +91,10 @@ export function WorkoutsPage() {
         <div className="list">{history.map((s) => <Link key={s.id} className="item tappable" to={`/sessions/${s.id}`}><div className="grow"><div className="title">{s.templateName}</div><div className="sub">{fmtDate(s.day)} · {s.status === 'done' ? `${s.items.filter((i) => i.sets.some((x) => x.done)).length} exercises` : s.status}</div></div><span className="chev">›</span></Link>)}</div>
       )}
 
-      {confirm === 'red' && <Sheet title="Not today" onClose={() => setConfirm(null)}><p>Your check-in says something hurts, you feel sick, or you are dizzy. No workout today. Tell a parent how you feel; tomorrow is a new check-in.</p></Sheet>}
+      {confirm === 'red' && <Sheet title="Not today" onClose={() => setConfirm(null)}><p>Your check-in says something hurts, you feel sick, or you are dizzy. No training today; the Easy day (two minutes of breathing) is the one thing to do, and it counts. Tell a parent how you feel; tomorrow is a new check-in.</p></Sheet>}
       {confirm && confirm !== 'red' && (
         <Sheet title="Different from the recommendation" onClose={() => setConfirm(null)} footer={<><button className="btn" onClick={() => setConfirm(null)}>Go with the recommendation</button><button className="btn primary" onClick={() => { const id = confirm; setConfirm(null); startTemplate(id); }}>Do it anyway</button></>}>
-          <p>Today the app suggests <strong>{readiness?.offer?.name ?? 'rest'}</strong>. Reasons:</p>
+          <p>Today the app suggests <strong>{readiness?.offer?.name ?? 'the easy day'}</strong>. Reasons:</p>
           <ul className="why">{readiness?.reasons.map((r, i) => <li key={i}>{r}</li>)}{readiness?.blockedWhy.map((r, i) => <li key={'b' + i}>{r}</li>)}</ul>
           <p className="small muted">If you go ahead, exercises that load a part of the body the app wants to rest are still swapped out. Technique first, always.</p>
         </Sheet>

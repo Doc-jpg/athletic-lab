@@ -63,11 +63,12 @@ describe('readiness engine', () => {
     expect(next.blocked).toContain('legs');
   });
 
-  it('acceptance 6: pain, illness or dizziness is red with no offer and a parent alert', () => {
+  it('acceptance 6: pain, illness or dizziness is red: only the easy day (breathing) is offered, with a parent alert', () => {
     for (const k of ['pain', 'sick', 'dizzy'] as const) {
       const r = assessReadiness({ day: DAY, checkIn: { ...fine, [k]: true }, logs: [], sessions: [], settings });
       expect(r.color).toBe('red');
-      expect(r.offer).toBeNull();
+      expect(r.offer.templateId).toBe('easy');
+      expect(r.offer.reduced).toBe(true);
       expect(r.foundations).toBe('no');
       expect(r.alerts.length).toBeGreaterThan(0);
       expect(r.reasons.join(' ')).toMatch(/parent/);

@@ -12,12 +12,12 @@ interface Stop { route: string; anchor?: string; title: string; text: string }
 
 const STOPS: Stop[] = [
   { route: '/today', anchor: 'checkin', title: 'Start with how you feel', text: 'Tap Check in: what sports you did today, energy, sleep, soreness, and whether anything hurts. Thirty seconds. The app picks the right kind of day from that.' },
-  { route: '/today', anchor: 'ready', title: 'Green, yellow, orange, red', text: 'Green means fresh: the planned session. Yellow means lighter. Orange means recovery after a heavy sports day. Red means something hurts or you are sick: no workout, tell a parent. It always says why.' },
+  { route: '/today', anchor: 'ready', title: 'Green, yellow, orange, red', text: 'Green means fresh: the planned workout. Yellow means the Easy workout. Orange means a big sports day already: a five-minute stretch is the whole thing. Red means something hurts or you are sick: two minutes of breathing and tell a parent. There is always something, and it always says why.' },
   { route: '/today', anchor: 'start', title: 'Start, or skip, no penalty', text: 'Start opens the workout one exercise at a time with a picture, the sets, and the cues. Skip is always fine. Nothing is lost by skipping.' },
   { route: '/today', anchor: 'message', title: 'One fresh message a day', text: 'Water, food, sleep, recovery, a mini-challenge. A different one each day, matched to what you did.' },
-  { route: '/workouts', anchor: 'templates', title: 'Your sessions and every exercise', text: 'Strength A and B, Shortstop Movement, Athletic coordination, Daily Foundations, Light day and Recovery. Below them, every exercise with what it builds, why it matters, the steps and the common mistakes.' },
+  { route: '/workouts', anchor: 'templates', title: 'Your sessions and every exercise', text: 'Strength A and B, Shortstop Movement, Quick feet, the Daily 5, the Easy workout, the Five-minute stretch and the Easy day. Below them, every exercise with what it builds, why it matters, the steps and the common mistakes.' },
   { route: '/progress', title: 'Progress against yourself only', text: 'Sessions, balance time, push-up level, consistency. You are only ever compared with your own earlier self. Badges here are never taken away.' },
-  { route: '/habits', title: 'Habits and missions', text: 'Daily Foundations (three to six easy minutes), the everyday habits (water, meals, sleep, play), and three missions for the week.' },
+  { route: '/habits', title: 'Habits and missions', text: 'The Daily 5 (five easy minutes), the everyday habits (water, meals, sleep, play), and three missions for the week.' },
   { route: '/journal', title: 'Notes in your own words', text: '"Push-ups were easier today." "Legs were really tired after basketball." Short notes like that help the app adjust. Mark a note private and only you see it.' },
   { route: '/settings', anchor: 'parent', title: 'What a parent can see', text: 'The parent view is behind a PIN. It shows completed workouts, sports and recovery days, progress, and any safety alerts. It never shows notes you marked private. This card lists all of it; nothing is hidden.' }
 ];

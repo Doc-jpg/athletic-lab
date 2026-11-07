@@ -10,7 +10,7 @@ import { addSportsLog, db, updateSession } from '../../db/db';
 import { pickMessage, daysSinceLastSession, CATEGORY_WORDS } from '../../engine/habits';
 import { addDays, SPORT_WORDS, DURATION_WORDS, INTENSITY_WORDS, type SportsLog, type Sport } from '../../engine/types';
 import { estimateMinutes } from '../../engine/program';
-import { COLOR_WORDS } from '../../engine/readiness';
+import { COLOR_WORDS, chain } from '../../engine/readiness';
 import { APP_NAME } from '../version';
 
 export function TodayPage() {
@@ -80,7 +80,7 @@ export function TodayPage() {
     <div className="col">
       <div className="hero">
         <div className="row between">
-          <div><h1>Hey {name}</h1><div className="sub">{fmtDateLong(day)}</div></div>
+          <div><h1>Hey {name}</h1><div className="sub">{fmtDateLong(day)}{(() => { const c = chain(sessions, logs, day); return c.length ? ` · ${c.length} day${c.length === 1 ? '' : 's'} in a row` : ''; })()}</div></div>
           <Link to="/settings" className="btn sm" style={{ background: 'rgba(255,255,255,.18)', color: '#fff', borderColor: 'transparent' }} aria-label="Settings">⚙︎</Link>
         </div>
       </div>
@@ -132,14 +132,22 @@ export function TodayPage() {
         {mainDone ? (
           <div className="row between"><div><strong>{mainDone.templateName} done</strong><div className="small muted">Nice work. See the summary or add a note.</div></div><Link className="btn sm" to={`/sessions/${mainDone.id}`}>Summary</Link></div>
         ) : readiness?.color === 'red' && checkIn ? (
-          <div className="col"><strong>No workout today</strong><div className="small">Tell a parent how you feel. Rest, water, food. Tomorrow is a new check-in.</div><Link className="btn block" to="/journal">Write a note about it</Link></div>
+          <div className="col">
+            <div><strong>Today: Easy day</strong><div className="small">Two minutes of slow breathing. That is your whole day, and it still counts. Tell a parent how you feel; rest, water, food. Tomorrow is a new check-in.</div></div>
+            {openSession && openSession.status === 'in_progress' ? (
+              <button className="btn primary xl block" onClick={() => nav(`/workout/${openSession.id}`)}>Continue Easy day</button>
+            ) : (
+              <button className="btn primary xl block" onClick={() => start('easy')}>Start the easy day</button>
+            )}
+            <Link className="btn block" to="/journal">Write a note about it</Link>
+          </div>
         ) : readiness?.offer ? (
           <div className="col">
-            <div><strong>{checkIn ? 'Today: ' : 'If today is a normal day: '}{readiness.offer.name}</strong><div className="small muted">About {offerMinutes(readiness.offer.templateId)} minutes{readiness.offer.reduced ? ', one set each, easy pace' : ''}. {readiness.offer.kind === 'recovery' ? 'Optional. Skipping it is also a fine choice.' : ''}</div></div>
+            <div><strong>{checkIn ? 'Today: ' : 'If today is a normal day: '}{readiness.offer.name}</strong><div className="small muted">About {offerMinutes(readiness.offer.templateId)} minutes{readiness.offer.reduced ? ', one set each, easy pace' : ''}. {readiness.offer.kind === 'recovery' ? 'That is the whole workout today. Five minutes and you are done.' : ''}</div></div>
             {openSession && openSession.status === 'in_progress' ? (
               <button className="btn primary xl block" onClick={() => nav(`/workout/${openSession.id}`)}>Continue {openSession.templateName}</button>
             ) : (
-              <button className="btn primary xl block" onClick={() => start(readiness.offer!.templateId)}>{checkIn ? 'Start' : 'Check in, then start'}</button>
+              <button className="btn primary xl block" onClick={() => start(readiness.offer.templateId)}>{checkIn ? 'Start' : 'Check in, then start'}</button>
             )}
             <div className="row">
               <button className="btn grow" onClick={skip}>Skip today</button>
@@ -149,11 +157,11 @@ export function TodayPage() {
         ) : null}
         {readiness && readiness.foundations !== 'no' && !foundationsDone && (
           <div className="row between mt" style={{ borderTop: '1px solid var(--line)', paddingTop: 10 }}>
-            <div className="grow"><strong>Daily Foundations</strong><div className="small muted">3 to 6 easy minutes{readiness.foundations === 'optional' ? ', only if it feels good' : ''}.</div></div>
+            <div className="grow"><strong>Daily 5</strong><div className="small muted">Five easy minutes, any day{readiness.foundations === 'optional' ? ', only if it feels good' : ''}.</div></div>
             <button className="btn sm" onClick={() => start('foundations')}>Do it</button>
           </div>
         )}
-        {foundationsDone && <div className="small muted mt">Daily Foundations done today.</div>}
+        {foundationsDone && <div className="small muted mt">Daily 5 done today.</div>}
       </div>
 
       {/* 5. Message */}

@@ -189,7 +189,7 @@ export interface BuiltSession {
 /** Build today's session from a template and the readiness verdict. */
 export function buildSession(template: WorkoutTemplate, readiness: Readiness, ctx: BuildContext): BuiltSession {
   const phase = programPhase(ctx.athlete.programStart, ctx.day);
-  const reduced = readiness.offer?.reduced ?? false;
+  const reduced = readiness.offer.reduced;
   const changes: string[] = [];
   const items: SessionItem[] = [];
   for (const ti of template.items) {

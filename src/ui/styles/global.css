@@ -173,6 +173,7 @@ textarea.input { min-height: 76px; resize: vertical; }
 .hero { border-radius: var(--radius); padding: 16px; color: #fff; background: var(--hero-grad); box-shadow: var(--shadow); }
 .hero h1 { color: #fff; font-size: 22px; }
 .hero .sub { opacity: .9; font-size: 14px; }
+.hero-num { font-size: 30px; font-weight: 800; line-height: 1; }
 .ready { border-radius: var(--radius); padding: 14px; border: 2px solid var(--line); background: var(--bg-elev); box-shadow: var(--shadow); }
 .ready.green { border-color: var(--green); }
 .ready.yellow { border-color: var(--yellow); }

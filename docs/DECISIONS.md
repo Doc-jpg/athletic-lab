@@ -2,6 +2,14 @@
 
 Newest first. Append here; this is where the next session starts.
 
+## 2026-11-07, v0.6.0, something every day, in Eli's words (Deren: "same mentality. Something every day ... this is a 12-year-old who doesn't know movements, doesn't know exercises, doesn't know muscle groups")
+
+- **There is always something.** A red day (pain, sick, dizzy) no longer ends in "No workout today". It offers the **Easy day**: two minutes of slow breathing and, if it feels fine, a one-minute walk around the house; it counts as his day, and "tell a parent" stays on the card. The hard rule is unchanged: nothing loads anything on red, and the Workouts list still refuses the training sessions. The engine's `offer` is never null now (tests updated).
+- An orange day (tournament, a lot of sport) offers the **Five-minute stretch** as the whole workout, not "optional, skipping is also fine". He already did the hard part; the stretch is the habit.
+- **Chain on Today:** "3 days in a row" under the date, counting any done session (Daily 5 and Easy day included) or a logged sport.
+- **Plain names everywhere.** Templates: Quick feet (was Athletic coordination), Daily 5 (Daily Foundations), Easy workout (Light day), Five-minute stretch (Recovery), Easy day (new). Areas: Legs, Arms chest and back, Belly and back (core), Quick feet and athletic moves, Shortstop moves, Stretching. Exercises: "Split squat holding a chair", "Push-up on a bench or counter", "One-arm row, hand on a chair", "Lying superman arms (Y and T)", "Standing twists", "Kneel, reach out, hold still", "Opposite hand to opposite knee", "Side step and freeze", "Open the book (back twist)", "Side shuffle (defense slide)", "Three-step sprint starts", "Side lunge", "Hip hinge (the fielding bend)", "Skater jump and freeze", "Sit and switch hips (90/90)", "Carioca (the grapevine run)", "Quick feet over a line", "Drop step (ball over your head)", "Crossover step (ball to the side)", "Hip turn (see it, go)", "Soft landings", "Stop-and-go game". Push versus pull and muscle-group words never appear on his screens; the app just says what to do next, with the moving drawing, three cues and a video.
+- FAQ: "Is there a day with nothing to do?" and "I do not know what a move is or what it works." Tour and the colors text rewritten the same way.
+
 ## 2026-11-07, v0.5.2, Sunday first (Deren: "Sunday is the first day of the week in my mind")
 The Progress calendar and the mission week now run Sunday to Saturday, matching Dad Lab. New missions arrive on Sunday.
 

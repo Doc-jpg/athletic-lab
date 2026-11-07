@@ -110,9 +110,9 @@ describe('Shortstop Movement: readiness, rotation, building and progression', ()
     expect(ids).toContain('ss-hinge');
   });
 
-  it('red day: nothing', () => {
+  it('red day: only the easy day, never the movement session', () => {
     const r = assessReadiness({ day: DAY, checkIn: { ...fine, pain: true }, logs: [], sessions: [], settings, planned: { kind: 'movement', templateId: 'shortstop', name: 'Shortstop Movement' } });
-    expect(r.offer).toBeNull();
+    expect(r.offer.templateId).toBe('easy');
   });
 
   it('rotation: A, Shortstop, B, Shortstop, A', () => {

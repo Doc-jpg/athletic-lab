@@ -61,7 +61,7 @@ const shot = (page, name) => page.screenshot({ path: path.join(shotsDir, `${name
   await page.waitForSelector('text=Checked in');
   await settle();
   let t = await body();
-  expect('yellow day after a medium practice', /Go lighter today/.test(t), true);
+  expect('yellow day after a medium practice', /Easy workout today/.test(t), true);
   expect('arm blocked after pitching', /no extra arm or shoulder work/.test(t), true);
   expect('daily message shown', /Recovery|Hydration|Food|Sleep|Consistency|Confidence|Mobility|Challenge/.test(t), true);
   await shot(page, '02_today_checked_in');
@@ -72,7 +72,7 @@ const shot = (page, name) => page.screenshot({ path: path.join(shotsDir, `${name
   await page.waitForURL(/\/workout\//);
   await settle();
   t = await body();
-  expect('light day session opened', /Light day · 1 of/.test(t), true);
+  expect('light day session opened', /Easy workout · 1 of/.test(t), true);
   await shot(page, '03_player');
   const total = await page.locator('.progress-dots i').count();
   for (let i = 0; i < total; i++) {
@@ -113,7 +113,7 @@ const shot = (page, name) => page.screenshot({ path: path.join(shotsDir, `${name
   await page.reload();
   await page.waitForSelector('text=Hey Eli', { timeout: 15000 });
   t = await body();
-  expect('offline: app opens and shows the finished session', /Light day done/.test(t), true);
+  expect('offline: app opens and shows the finished session', /Easy workout done/.test(t), true);
   await page.click('a[href="#/journal"]');
   await page.waitForSelector('text=Journal');
   await page.fill('textarea', 'My legs were really tired after basketball.');
@@ -181,14 +181,26 @@ const shot = (page, name) => page.screenshot({ path: path.join(shotsDir, `${name
   await page.click('role=button[name="Save check-in"]');
   await settle();
   t = await body();
-  expect('red day: no workout', /No workout today/.test(t), true);
+  expect('red day: the headline is the easy day, not nothing', /Easy day: breathe, and tell a parent/.test(t), true);
   expect('red day: tell a parent', /Tell a parent/.test(t), true);
   await shot(page, '07_red_day');
   await page.click('a[href="#/workouts"]');
   await page.waitForSelector('text=Every exercise');
+  await page.click('text=Easy day');
+  await page.waitForURL(/\/workout\//);
+  await settle();
+  t = await body();
+  expect('easy day is breathing plus an optional walk', /Easy day · 1 of 2/.test(t) && /Relaxed breathing/.test(t), true);
+  await page.click('role=button[name="Stop"]');
+  await page.click('role=button[name="Out of time"]');
+  await page.waitForURL(/\/sessions\//);
+  await page.goto(URL + '#/today');
+  await page.waitForSelector('text=Checked in');
+  await page.click('a[href="#/workouts"]');
+  await page.waitForSelector('text=Every exercise');
   await page.click('text=Strength A');
   await page.waitForSelector('text=Not today');
-  expect('workouts list refuses on a red day', /No workout today/.test(await body()), true);
+  expect('workouts list refuses training on a red day', /No training today/.test(await body()), true);
   await page.keyboard.press('Escape');
 
   // --- Acceptance 9: parent access, disclosed and authenticated ---
@@ -211,8 +223,8 @@ const shot = (page, name) => page.screenshot({ path: path.join(shotsDir, `${name
   expect('parent sees the week', /last 7 days/i.test(t), true);
   await shot(page, '08_parent');
   await page.click('role=button[name="Exercises"]');
-  await page.waitForSelector('text=Supported dumbbell row');
-  const rowCard = page.locator('.item', { hasText: 'Supported dumbbell row' });
+  await page.waitForSelector('text=One-arm row, hand on a chair');
+  const rowCard = page.locator('.item', { hasText: 'One-arm row, hand on a chair' });
   expect('5 lb cannot be approved before a form check', await rowCard.getByRole('button', { name: '5 lb dumbbells' }).isDisabled(), true);
   await rowCard.getByRole('button', { name: 'Mark form checked' }).click();
   await settle();
@@ -261,7 +273,7 @@ const shot = (page, name) => page.screenshot({ path: path.join(shotsDir, `${name
   await page.click('role=button[name="Something hurts"]'); // toggles it off
   await page.click('role=button[name="Save check-in"]');
   await settle();
-  expect('pain cleared: the finished session is back on Today', /Light day done/.test(await body()), true);
+  expect('pain cleared: the finished session is back on Today', /Easy workout done/.test(await body()), true);
   await page.goto(URL + '#/help');
   await page.waitForSelector('input[placeholder="Search the questions"]');
   await page.fill('input[placeholder="Search the questions"]', 'creatine');
@@ -303,17 +315,17 @@ const shot = (page, name) => page.screenshot({ path: path.join(shotsDir, `${name
   await p2.waitForURL(/\/parent/);
   await p2.waitForTimeout(800);
   t2 = await p2.locator('body').innerText();
-  expect('dad sees the light day session synced from eli', /Light day/.test(t2), true);
+  expect('dad sees the light day session synced from eli', /Easy workout/.test(t2), true);
   // Dad approves 10 lb on the row; Eli's phone picks it up on its next sync.
   await p2.click('role=button[name="Exercises"]');
-  const rowCard2 = p2.locator('.item', { hasText: 'Supported dumbbell row' });
+  const rowCard2 = p2.locator('.item', { hasText: 'One-arm row, hand on a chair' });
   await rowCard2.getByRole('button', { name: '10 lb dumbbells' }).click();
   await p2.waitForTimeout(3500);
   await page.goto(URL + '#/workouts');
   await page.reload(); // a hash change alone is not "opening the app"; a reload is, and it syncs on open
   await page.waitForSelector('text=Every exercise');
   await page.waitForTimeout(3500);
-  await page.click('text=Supported dumbbell row');
+  await page.click('text=One-arm row, hand on a chair');
   await page.waitForSelector('text=Your history');
   expect('eli sees the approval made on dad\'s phone', /Approved: 5 lb dumbbells, 10 lb dumbbells/.test(await body()), true);
   await ctx2.close();

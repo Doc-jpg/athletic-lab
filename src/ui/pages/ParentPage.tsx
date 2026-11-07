@@ -111,7 +111,7 @@ export function ParentPage() {
           </div>
           <div className="card">
             <h3>Progress</h3>
-            <p className="small">{sessions.filter((s) => s.status === 'done' && s.kind !== 'foundations').length} sessions total, {sessions.filter((s) => s.status === 'done' && s.kind === 'foundations').length} Foundations. <Link to="/progress">Full progress page</Link> (same one {name} sees).</p>
+            <p className="small">{sessions.filter((s) => s.status === 'done' && s.kind !== 'foundations').length} sessions total, {sessions.filter((s) => s.status === 'done' && s.kind === 'foundations').length} Daily 5s. <Link to="/progress">Full progress page</Link> (same one {name} sees).</p>
           </div>
         </>
       )}

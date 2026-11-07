@@ -106,7 +106,7 @@ export function CheckInSheet({ name, initialSports, onSave, onClose }: { name: s
         <button className={`chip red ${draft.dizzy ? 'on' : ''}`} onClick={() => set({ dizzy: !draft.dizzy })}>Dizzy or lightheaded</button>
       </div>
       {draft.pain && <div className="field mt"><label>Where does it hurt?</label><input className="input" value={draft.painWhere ?? ''} onChange={(e) => set({ painWhere: e.target.value })} placeholder="for example right elbow" /></div>}
-      {red && <div className="banner danger mt">No workout today. Tell a parent how you feel; if it is more than tired muscles, a doctor decides, not the app.</div>}
+      {red && <div className="banner danger mt">No training today. You still get the Easy day (two minutes of breathing), and it still counts. Tell a parent how you feel; if it is more than tired muscles, a doctor decides, not the app.</div>}
       <div className="field mt"><label>Anything else? (optional)</label><input className="input" value={draft.note ?? ''} onChange={(e) => set({ note: e.target.value })} placeholder="Legs are tired from practice" /></div>
     </Sheet>
   );

@@ -23,7 +23,7 @@ describe('storage', () => {
     expect(first.exercises).toBeGreaterThan(40);
     const second = await seedLibrary(db);
     expect(second.exercises).toBe(0);
-    expect((await db.templates.toArray()).length).toBe(7);
+    expect((await db.templates.toArray()).length).toBe(8);
   });
 
   it('acceptance 1 and 2: a session saved offline is there when the app reopens (same database, new connection)', async () => {
