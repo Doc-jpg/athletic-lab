@@ -15,7 +15,7 @@ const HABITS: Array<{ key: HabitKey; title: string; text: string }> = [
   { key: 'play', title: 'Normal play', text: 'Bikes, tag, climbing, shooting hoops for fun. Counts for a lot.' }
 ];
 
-/** The Daily 5, the everyday habits, this week's missions, and the healthy-habits notes. No calories, no weight, no supplements by default. */
+/** The Five-minute mini workout, the everyday habits, this week's missions, and the healthy-habits notes. No calories, no weight, no supplements by default. */
 export function HabitsPage() {
   const nav = useNavigate();
   const day = useToday();
@@ -53,22 +53,22 @@ export function HabitsPage() {
     <div className="col">
       <h1>Habits</h1>
       <div className="card row between">
-        <div className="grow"><strong>Daily 5</strong><div className="small muted">Breathing, cat-cow, standing twists, ankles, hips, a little balance. 3 to 6 minutes. Movement, not a workout. Skip it when sick, hurt or wiped out.</div></div>
+        <div className="grow"><strong>Five-minute mini workout</strong><div className="small muted">Breathing, cat and cow, standing twists, ankles, hips, a little balance. About 5 minutes. It is small and easy, so it is fine on top of anything else. Skip it when you are sick, hurt or have no energy.</div></div>
         {foundationsDone ? <span className="pill green">Done</span> : readiness?.foundations === 'no' ? <span className="pill red">Not today</span> : <button className="btn primary" onClick={doFoundations}>Do it</button>}
       </div>
 
-      <h3>Today's habits</h3>
+      <h3>Good things you did today (tap them)</h3>
       <div className="list">
         {HABITS.map((h) => <button key={h.key} className={`habit-row ${isOn(h.key) ? 'on' : ''}`} onClick={() => toggle(h.key)}><div className="box">{isOn(h.key) ? '✓' : ''}</div><div className="grow"><div><strong>{h.title}</strong></div><div className="small muted">{h.text}</div></div></button>)}
       </div>
-      <p className="small muted">Checking these is for you, not for a score. Nothing bad happens on a day you miss.</p>
+      <p className="small muted">Tapping these is just for you. It is not a score. Nothing bad happens on a day you miss.</p>
 
-      <h3>This week's missions</h3>
+      <h3>This week's missions (little challenges)</h3>
       <div className="list">
-        {thisWeek.length === 0 && <div className="small muted">Missions appear after your first check-in of the week.</div>}
+        {thisWeek.length === 0 && <div className="small muted">Missions show up after you answer the questions for the first time this week.</div>}
         {thisWeek.map((m) => <div key={m.id} className="card mission"><div className="row between"><strong>{m.title}</strong>{m.doneAt ? <span className="pill green">Done</span> : <span className="small muted">{m.progress} of {m.target}</span>}</div><div className="small muted">{m.text}</div><div className="bar"><div style={{ width: `${Math.round((100 * m.progress) / m.target)}%` }} /></div></div>)}
       </div>
-      <p className="small muted">Three new ones every Sunday. Unfinished missions just go away; nothing is lost.</p>
+      <p className="small muted">You get three new ones every Sunday. Missions you did not finish just go away. Nothing is lost.</p>
 
       {activeSupps.length > 0 && (
         <div className="card">
@@ -84,8 +84,8 @@ export function HabitsPage() {
           <li><strong>Water first.</strong> Sports drinks only after more than an hour of hard work or in real heat. Energy drinks, never.</li>
           <li><strong>Real food beats powders.</strong> Eggs, milk, yogurt, chicken, beans, peanut butter, rice, pasta, potatoes, fruit, vegetables. The app does not suggest powders or pills; what you take in the morning is between you and your parents, and the check-in records it.</li>
           <li><strong>Carbs are fuel for sport.</strong> Bread, rice, pasta, fruit before and after practice.</li>
-          <li><strong>Sleep is when you get stronger.</strong> 9 to 11 hours at this age. Short sleep shows up as a yellow day.</li>
-          <li><strong>No dieting, no weigh-ins.</strong> This app does not track weight, body fat or appearance, on purpose.</li>
+          <li><strong>Sleep is when you get stronger.</strong> 9 to 11 hours a night at your age. If you did not sleep much, the app gives you a yellow (easier) day.</li>
+          <li><strong>No diets, no weighing.</strong> This app never asks about your weight or how you look. That is on purpose.</li>
         </ul>
       </div>
     </div>

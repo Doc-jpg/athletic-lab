@@ -63,7 +63,7 @@ describe('readiness engine', () => {
     expect(next.blocked).toContain('legs');
   });
 
-  it('acceptance 6: pain, illness or dizziness is red: only the easy day (breathing) is offered, with a parent alert', () => {
+  it('acceptance 6: pain, illness or dizziness is red: only the gentle day (breathing) is offered, with a parent alert', () => {
     for (const k of ['pain', 'sick', 'dizzy'] as const) {
       const r = assessReadiness({ day: DAY, checkIn: { ...fine, [k]: true }, logs: [], sessions: [], settings });
       expect(r.color).toBe('red');
@@ -122,7 +122,7 @@ describe('readiness engine', () => {
     for (let i = 1; i <= 6; i++) logs.push(log({ day: addDays(DAY, -i), duration: 'medium', intensity: 'medium' }));
     const r = assessReadiness({ day: DAY, checkIn: fine, logs, sessions: [], settings });
     expect(['orange', 'yellow']).toContain(r.color);
-    expect(r.reasons.join(' ')).toMatch(/heavier|high/);
+    expect(r.reasons.join(' ')).toMatch(/busier/);
   });
 
   it('load scores are bounded and tournaments are the top', () => {

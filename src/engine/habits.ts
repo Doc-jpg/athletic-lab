@@ -34,31 +34,31 @@ const hasSport = (c: MessageContext, s: string) => c.todayLogs.some((l) => l.spo
 
 export const MESSAGES: Msg[] = [
   { key: 'hyd-bball', category: 'hydration', text: 'Basketball day? Water bottle in the bag, and drink at every break, not just when you are thirsty.', fit: (c) => (hasSport(c, 'basketball') ? 3 : 0) },
-  { key: 'hyd-baseball', category: 'hydration', text: 'Long time on the field today. Sip water between innings; thirsty means you are already behind.', fit: (c) => (hasSport(c, 'baseball') ? 3 : 0) },
+  { key: 'hyd-baseball', category: 'hydration', text: 'Long time on the field today. Drink water between innings. If you feel thirsty, you already needed it a while ago.', fit: (c) => (hasSport(c, 'baseball') ? 3 : 0) },
   { key: 'hyd-plain', category: 'hydration', text: 'Water first. A glass when you wake up and one with every meal is most of the job.', fit: any },
   { key: 'hyd-heat', category: 'hydration', text: 'Hot day rule: drink before, during and after. A sports drink only matters after more than an hour of hard work.', fit: (c) => (c.todayLogs.some((l) => l.duration === 'long') ? 2 : 1) },
-  { key: 'nut-upgrade', category: 'nutrition', text: 'Your next upgrade is a real meal: something with protein, something with color, something that fills you up.', fit: any },
-  { key: 'nut-after', category: 'nutrition', text: 'After a hard practice the best recovery tool is dinner. Eat like you mean it.', fit: (c) => (c.todayLogs.length ? 3 : 0) },
-  { key: 'nut-breakfast', category: 'nutrition', text: 'Breakfast is the first play of the day. Eggs, oatmeal, a banana, peanut butter toast: anything beats nothing.', fit: any },
-  { key: 'nut-fruit', category: 'nutrition', text: 'Fruit and vegetables are not a rule, they are fuel. One at lunch, one at dinner, done.', fit: any },
-  { key: 'slp-tomorrow', category: 'sleep', text: "Tomorrow's energy starts tonight. Nine to eleven hours is what a growing athlete runs on.", fit: (c) => (c.sleepLow ? 4 : 1) },
+  { key: 'nut-upgrade', category: 'nutrition', text: 'A real meal has something that builds muscle (eggs, chicken, beans, yogurt), something colorful (fruit or vegetables), and something that fills you up.', fit: any },
+  { key: 'nut-after', category: 'nutrition', text: 'After a hard practice, the best way to help your body is dinner. Eat a good one.', fit: (c) => (c.todayLogs.length ? 3 : 0) },
+  { key: 'nut-breakfast', category: 'nutrition', text: 'Breakfast is the first thing that gets you ready for the day. Eggs, oatmeal, a banana, peanut butter toast: anything is better than nothing.', fit: any },
+  { key: 'nut-fruit', category: 'nutrition', text: 'Fruit and vegetables give you energy. One at lunch, one at dinner, done.', fit: any },
+  { key: 'slp-tomorrow', category: 'sleep', text: "Tomorrow's energy starts tonight. A growing athlete needs nine to eleven hours of sleep.", fit: (c) => (c.sleepLow ? 4 : 1) },
   { key: 'slp-screens', category: 'sleep', text: 'Screens off a little earlier tonight. Sleep is when muscles actually get stronger.', fit: (c) => (c.sleepLow ? 3 : 1) },
-  { key: 'slp-game', category: 'sleep', text: 'Big day tomorrow? The best prep is boring: good dinner, early bed.', fit: any },
+  { key: 'slp-game', category: 'sleep', text: 'Big day tomorrow? The best way to get ready is boring: a good dinner and an early bedtime.', fit: any },
   { key: 'rec-worked', category: 'recovery', text: 'You worked hard today. The five-minute stretch is part of getting stronger, not a day off from it.', fit: (c) => (c.color === 'orange' ? 4 : c.todayLogs.length ? 2 : 0) },
-  { key: 'rec-goodcall', category: 'recovery', text: 'Taking a rest day when you are wiped out is a smart athlete move. Pros do it on purpose.', fit: (c) => (c.color === 'orange' || c.color === 'red' ? 3 : 0) },
-  { key: 'rec-arm', category: 'recovery', text: 'Arm day off after throwing is how arms last for years. Easy mobility is plenty.', fit: (c) => (c.todayLogs.some((l) => l.heavyThrowing || l.pitched) || c.yesterdayLogs.some((l) => l.pitched) ? 4 : 0) },
-  { key: 'con-ten', category: 'consistency', text: 'Ten minutes of good movement beats rushing through a workout with sloppy form.', fit: any },
-  { key: 'con-back', category: 'consistency', text: 'Been a few days. No big deal. Pick it back up today, even just the Daily 5.', fit: (c) => (c.daysSinceSession !== undefined && c.daysSinceSession >= 3 ? 4 : 0) },
-  { key: 'con-small', category: 'consistency', text: 'Small and steady wins. One session at a time is the whole plan.', fit: any },
-  { key: 'cnf-learn', category: 'confidence', text: "Your goal isn't to beat yesterday every time. It's to keep learning.", fit: any },
-  { key: 'cnf-form', category: 'confidence', text: 'Perfect form on an easy version is more impressive than a sloppy harder one. Coaches notice.', fit: any },
-  { key: 'cnf-listen', category: 'confidence', text: 'Knowing when to go hard and when to back off is a skill. You are practicing it right now.', fit: (c) => (c.color === 'yellow' ? 3 : 1) },
+  { key: 'rec-goodcall', category: 'recovery', text: 'Taking a rest day when you have no energy is a smart choice. Pro athletes do it on purpose.', fit: (c) => (c.color === 'orange' || c.color === 'red' ? 3 : 0) },
+  { key: 'rec-arm', category: 'recovery', text: 'A day off for your arm after lots of throwing keeps it healthy for years. Easy stretching is plenty.', fit: (c) => (c.todayLogs.some((l) => l.heavyThrowing || l.pitched) || c.yesterdayLogs.some((l) => l.pitched) ? 4 : 0) },
+  { key: 'con-ten', category: 'consistency', text: 'Ten minutes done carefully is better than rushing through a workout and doing it sloppily.', fit: any },
+  { key: 'con-back', category: 'consistency', text: 'It has been a few days. That is okay. Start again today, even if it is just the Five-minute mini workout.', fit: (c) => (c.daysSinceSession !== undefined && c.daysSinceSession >= 3 ? 4 : 0) },
+  { key: 'con-small', category: 'consistency', text: 'A little bit every day is the whole plan. One workout at a time.', fit: any },
+  { key: 'cnf-learn', category: 'confidence', text: "You do not have to beat yesterday every time. You just have to keep learning.", fit: any },
+  { key: 'cnf-form', category: 'confidence', text: 'Doing an easy version perfectly looks better than doing a hard version sloppily. Coaches notice.', fit: any },
+  { key: 'cnf-listen', category: 'confidence', text: 'Knowing when to go hard and when to take it easy is a skill. You are practicing it right now.', fit: (c) => (c.color === 'yellow' ? 3 : 1) },
   { key: 'mob-ankles', category: 'mobility', text: 'Your ankles, hips and shoulders help you move well. Give them a few minutes today.', fit: any },
-  { key: 'mob-sitting', category: 'mobility', text: 'Lots of sitting at school? Hips get tight. The half-kneeling hip opener is three minutes well spent.', fit: any },
-  { key: 'mob-ankle-chal', category: 'mobility', text: 'Mini-challenge: brush your teeth on one leg tonight. Switch legs halfway. Balance for free.', fit: any },
-  { key: 'fun-cat', category: 'fun', text: 'Land like a cat. Quiet feet are strong feet.', fit: any },
-  { key: 'fun-playground', category: 'fun', text: 'Playing outside counts. Tag, bikes, climbing: that is athletic training with no app needed.', fit: any },
-  { key: 'fun-balance', category: 'fun', text: 'Challenge: stand on one foot while you wait for anything today. Bus, microwave, whatever.', fit: any }
+  { key: 'mob-sitting', category: 'mobility', text: 'Lots of sitting at school makes hips tight. The kneeling hip stretch takes three minutes and fixes that.', fit: any },
+  { key: 'mob-ankle-chal', category: 'mobility', text: 'Try this: brush your teeth standing on one leg tonight. Switch legs halfway. Free balance practice.', fit: any },
+  { key: 'fun-cat', category: 'fun', text: 'Land softly and quietly, the way a cat lands. Quiet feet are strong feet.', fit: any },
+  { key: 'fun-playground', category: 'fun', text: 'Playing outside counts. Tag, bikes, climbing: that is training, no app needed.', fit: any },
+  { key: 'fun-balance', category: 'fun', text: 'Try this: stand on one foot whenever you are waiting for something today. The bus, the microwave, anything.', fit: any }
 ];
 
 function inQuietHours(now: Date, r: Reminders): boolean {
@@ -84,7 +84,7 @@ export function pickMessage(ctx: MessageContext, reminders: Reminders, now: Date
   return top[seed % top.length].m;
 }
 
-export const CATEGORY_WORDS: Record<MessageCategory, string> = { hydration: 'Hydration', nutrition: 'Food', sleep: 'Sleep', recovery: 'Recovery', consistency: 'Consistency', confidence: 'Confidence', mobility: 'Mobility', fun: 'Challenge' };
+export const CATEGORY_WORDS: Record<MessageCategory, string> = { hydration: 'Water', nutrition: 'Food', sleep: 'Sleep', recovery: 'Rest', consistency: 'Keep going', confidence: 'You can do it', mobility: 'Loosen up', fun: 'Try this' };
 
 export function daysSinceLastSession(sessions: Session[], day: Day): number | undefined {
   const last = sessions.filter((s) => s.status === 'done' && s.kind !== 'foundations' && s.kind !== 'recovery' && s.day <= day).sort((a, b) => b.day.localeCompare(a.day))[0];

@@ -42,7 +42,7 @@ export async function recordCheckIn(input: Omit<CheckIn, 'id' | 'ts' | 'color'>,
   return { checkIn, readiness };
 }
 
-/** Make today's session from a template and the verdict, save it as planned, return it. */
+/** Make today's workout from a template and the verdict, save it as planned, return it. */
 export async function planSession(templateId: string, readiness: Readiness, ctx: TodayContext, by: Who): Promise<Session> {
   const template = ctx.templates.find((t) => t.id === templateId);
   if (!template) throw new Error('Template not found');

@@ -110,7 +110,7 @@ describe('Shortstop Movement: readiness, rotation, building and progression', ()
     expect(ids).toContain('ss-hinge');
   });
 
-  it('red day: only the easy day, never the movement session', () => {
+  it('red day: only the gentle day, never the movement session', () => {
     const r = assessReadiness({ day: DAY, checkIn: { ...fine, pain: true }, logs: [], sessions: [], settings, planned: { kind: 'movement', templateId: 'shortstop', name: 'Shortstop Movement' } });
     expect(r.offer.templateId).toBe('easy');
   });
@@ -139,7 +139,7 @@ describe('Shortstop Movement: readiness, rotation, building and progression', ()
     const week = [doneSession(addDays(DAY, -2), 'strength-a', 'strength'), doneSession(addDays(DAY, -4), 'shortstop', 'movement'), doneSession(addDays(DAY, -6), 'strength-b', 'strength')];
     const r3 = assessReadiness({ day: DAY, checkIn: fine, logs: [], sessions: week, settings, planned: { kind: 'movement', templateId: 'shortstop', name: 'Shortstop Movement' } });
     expect(r3.offer?.templateId).toBe('coordination');
-    expect(r3.reasons.join(' ')).toMatch(/3 strength or movement sessions/);
+    expect(r3.reasons.join(' ')).toMatch(/3 strength or Shortstop workouts/);
   });
 
   it('progression: learn phase holds; two easy sessions add two reps to the crossover, never automatic beyond that; growth spurt holds', () => {

@@ -6,7 +6,7 @@ import { SYNC_AVAILABLE } from '../../sync-config';
 import { useToast } from '../components/Sheet';
 import { useAthlete } from '../hooks';
 import { useTour } from '../components/Tour';
-import type { ThemeChoice } from '../../engine/types';
+import { THEME_WORDS, type ThemeChoice } from '../../engine/types';
 import { nowIso } from '../../engine/types';
 import { APP_NAME } from '../version';
 
@@ -110,7 +110,7 @@ export function SetupPage() {
     <div className="col">
       <div className="hero">
         <h1>{APP_NAME}</h1>
-        <div className="sub">Strength, mobility, athletic movement and good habits for one young athlete, adjusted to every day.</div>
+        <div className="sub">Strength, stretching, quick feet and good habits for a young athlete. A little bit every day.</div>
       </div>
 
       {step === 'who' && (
@@ -178,14 +178,18 @@ export function SetupPage() {
       {step === 'handoff' && (
         <div className="card">
           <h2>Hey {name}, this is yours</h2>
-          <p className="small muted">Pick a look. You can change it later in Settings.</p>
+          <p className="small muted">Pick the colors you like. Tap one to try it. You can change it later in Settings.</p>
           <div className="btn-grid cols-3">
-            {([['play', 'Playful'], ['minimal', 'Minimal'], ['pro', 'Pro sports']] as Array<[ThemeChoice, string]>).map(([k, label]) => (
-              <button key={k} className={`theme-swatch ${theme === k ? 'on' : ''}`} onClick={async () => { setTheme(k); document.documentElement.setAttribute('data-theme', k); const a = await db.athlete.get('athlete'); if (a) await db.athlete.put({ ...a, theme: k }); }}>{label}</button>
+            {(Object.keys(THEME_WORDS) as ThemeChoice[]).map((k) => (
+              <button key={k} className={`theme-swatch ${theme === k ? 'on' : ''}`} onClick={async () => { setTheme(k); document.documentElement.setAttribute('data-theme', k); const a = await db.athlete.get('athlete'); if (a) await db.athlete.put({ ...a, theme: k }); }} aria-label={THEME_WORDS[k].name}>
+                <span className="theme-dots"><i style={{ background: THEME_WORDS[k].colors[0] }} /><i style={{ background: THEME_WORDS[k].colors[1] }} /></span>
+                <span>{THEME_WORDS[k].name}</span>
+                <span className="tiny muted">{THEME_WORDS[k].sub}</span>
+              </button>
             ))}
           </div>
-          <p className="small mt">Every day starts with a quick check-in: what sports you did and how you feel. Then the app picks the right kind of day and shows you the workout one move at a time. Skipping is always allowed.</p>
-          <p className="small">{parentName || 'Your parent'} has a PIN-protected view of your workouts, sports days and progress. Settings shows exactly what that includes; notes you mark private stay private.</p>
+          <p className="small mt">Every day starts with a few quick questions: what sports you did and how you feel. Then the app picks what you do today and shows you one move at a time. You are always allowed to skip.</p>
+          <p className="small">{parentName || 'Your parent'} can see your workouts, your sports days and your progress (it takes a secret number to open). Settings shows exactly what that includes. Notes you mark private stay private.</p>
           <div className="col mt">
             <button className="btn primary lg block" onClick={() => { nav('/today'); setTimeout(tour.start, 200); }}>Take the one-minute tour</button>
             <button className="btn block" onClick={() => nav('/today')}>Skip the tour</button>

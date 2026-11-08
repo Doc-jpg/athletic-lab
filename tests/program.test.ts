@@ -46,7 +46,7 @@ describe('progression (acceptance 8: never automatic weight)', () => {
     const d = decideDose(squat, squat.defaultDose, ctx(s), { phase: 'build', week: 3, label: '', text: '' }, false);
     expect(d.dose.reps).toBe(squat.defaultDose.reps! + 2);
     expect(d.dose.sets).toBe(squat.defaultDose.sets);
-    expect(d.reason).toMatch(/two more reps/);
+    expect(d.reason).toMatch(/two more/);
   });
 
   it('one easy session is not enough', () => {
@@ -105,7 +105,7 @@ describe('session building from a template', () => {
     expect(ids).not.toContain('up-row');
     expect(ids).not.toContain('up-curl');
     expect(ids).toContain('up-scapslide');
-    expect(changes.join(' ')).toMatch(/form check/);
+    expect(changes.join(' ')).toMatch(/watched you do it/);
     expect(session.why.length).toBeGreaterThan(0);
   });
 
@@ -138,7 +138,7 @@ describe('session building from a template', () => {
     const statuses = new Map<string, ExerciseStatus>([['lo-chairsquat', { exerciseId: 'lo-chairsquat', approvedLoads: [], disabled: true, updatedAt: '' }]]);
     const { session, changes } = buildSession(TEMPLATE_BY_ID['strength-a'], readyGreen, { ...base, statuses });
     expect(session.items.map((i) => i.exerciseId)).not.toContain('lo-chairsquat');
-    expect(changes.join(' ')).toMatch(/turned off/);
+    expect(changes.join(' ')).toMatch(/turned it off/);
   });
 
   it('A and B alternate with Shortstop Movement between them', () => {

@@ -94,7 +94,7 @@ describe('daily messages', () => {
     for (const bad of ['streak', 'lazy', 'shame', 'guilt', 'fat', 'skinny', 'lose weight', 'calories', 'you failed', 'excuse', 'disappoint']) expect(text, bad).not.toContain(bad);
     const back = pickMessage({ ...base, daysSinceSession: 5 }, reminders, new Date('2026-11-02T12:00:00'));
     expect(back?.key).toBe('con-back');
-    expect(back?.text).toMatch(/No big deal/);
+    expect(back?.text).toMatch(/That is okay/);
   });
   it('matches the day: basketball gets the water-bottle message, a throwing day the arm message', () => {
     const b = pickMessage({ ...base, todayLogs: [{ id: 'x', day: '2026-11-02', ts: '', sport: 'basketball', duration: 'long', intensity: 'hard', by: 'athlete' }] }, reminders, new Date('2026-11-02T12:00:00'));

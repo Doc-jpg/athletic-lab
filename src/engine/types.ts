@@ -423,8 +423,15 @@ export interface SupplementRecord {
   updatedAt: Iso;
 }
 
-export const FEEL_WORDS: Record<Feel, string> = { 1: 'Wiped out', 2: 'Low', 3: 'Okay', 4: 'Good', 5: 'Great' };
-export const SLEEP_WORDS: Record<Feel, string> = { 1: 'Rough', 2: 'Short', 3: 'Okay', 4: 'Good', 5: 'Great' };
+export const FEEL_WORDS: Record<Feel, string> = { 1: 'None', 2: 'Low', 3: 'Okay', 4: 'Good', 5: 'Lots' };
+export const SLEEP_WORDS: Record<Feel, string> = { 1: 'Bad', 2: 'Not much', 3: 'Okay', 4: 'Good', 5: 'Great' };
 export const SPORT_WORDS: Record<Sport, string> = { baseball: 'Baseball', basketball: 'Basketball', pe: 'PE class', running: 'Running', swimming: 'Swimming', football: 'Football', soccer: 'Soccer', play: 'Playing outside', other: 'Something else' };
-export const DURATION_WORDS: Record<Duration, string> = { short: 'Under 45 min', medium: '45 to 90 min', long: 'Over 90 min' };
+export const DURATION_WORDS: Record<Duration, string> = { short: 'Short (less than 45 minutes)', medium: 'Normal (about an hour)', long: 'Long (more than an hour and a half)' };
 export const INTENSITY_WORDS: Record<Intensity, string> = { easy: 'Easy', medium: 'Medium', hard: 'Hard' };
+/** The three looks, named by what they look like, because "Pro sports" is not a color. */
+export const THEME_WORDS: Record<ThemeChoice, { name: string; sub: string; colors: [string, string] }> = {
+  play: { name: 'Blue and orange', sub: 'Light, with blue buttons', colors: ['#1f6feb', '#ff7a1a'] },
+  minimal: { name: 'Plain and simple', sub: 'Light, not much color', colors: ['#f4f4f6', '#111'] },
+  pro: { name: 'Dark with lime', sub: 'Dark screen, lime buttons', colors: ['#0a0d14', '#e8ff47'] }
+};
+export const LEVEL_WORDS: Record<Level, string> = { beginner: 'start here', intermediate: 'a bit harder', advanced: 'hardest' };

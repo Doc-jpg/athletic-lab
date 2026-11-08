@@ -1,5 +1,16 @@
 # Decisions and lessons
 
+## 2026-11-08, v0.7.0, written for a literal reader (Deren, after the same pass on Vivi's app: "push some of these simplified explanations to Eli's app as well. Feel like sometimes you get too cute and rather you just be clear")
+
+- **Labels say what they are.** Looks are "Blue and orange / Plain and simple / Dark with lime" with color dots, not Playful / Minimal / Pro sports. Hero line: "Strength, stretching, quick feet and good habits for a young athlete. A little bit every day."
+- **Workout names say what you do, not how it feels.** Daily 5 → Five-minute mini workout; Easy workout → Short gentle workout; Easy day → Just breathing. Headlines: "A short gentle workout today", "No workout today: just breathing, and tell a parent". Strength A, Strength B, Shortstop Movement, Quick feet and Five-minute stretch stay.
+- **One word per thing.** "workout" (never "session"), "Answer the questions" (never "check in"), "rounds" (never "sets"), "add" (never "log"). Energy and sleep in words. Creatine and multivitamin as "yes" / "no" and the question names them ("Did you take your creatine and multivitamin today?").
+- **No idioms.** "Eat like you mean it", "first play of the day", "already behind", "runs on", "wiped out", "no big deal", "the whole plan", "a stop sign", "push through", "Steady as a rock", "Six on the field", "Range" are gone. Explicit shape comparisons ("back flat like a table") stay.
+- **Plain words for body parts and ideas.** Every "what it builds" line rewritten: no glute, hamstring, hip flexor, quad, core, stability, mobility, rotation or range without the plain words first. Move names that were not self-explaining now carry what you do: "Dead bug (lie on your back, arms and legs up)", "Stand on one foot", "Front plank (hold your body straight like a board)", "Slow belly breathing".
+- **Doses in sentences**, hold versus do-it-for, "so far" on the clock, "How many this round", questions that are questions, empty cards hidden, "Open Dad's page".
+- The engine's reasons were rewritten in the same voice ("You threw a lot today, so no extra arm or shoulder work."). Pitch Smart rest-day reasons keep their numbers.
+- Method, same as Dance Lab: dump every screen's text with Playwright, read it as a literal twelve-year-old, rewrite, dump again. The FAQ was rewritten whole.
+
 ## 2026-11-07 (night), v0.6.2, creatine and multivitamin on the check-in (Deren: "I need him to attest that he took his creatine and that he took his multivitamin that day")
 
 - Two buttons under the sleep and soreness questions: Creatine, Multivitamin. Tap to say yes; a no is just a no and gets written down. Saved on the day's check-in (`creatine`, `multivitamin`), so it syncs and backs up like everything else; older check-ins have neither field and show nothing.

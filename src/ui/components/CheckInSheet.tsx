@@ -38,16 +38,16 @@ export function SportCard({ draft, onChange, onRemove }: { draft: SportDraft; on
   return (
     <div className="card">
       <div className="row between"><strong>{SPORT_WORDS[draft.sport]}</strong><button className="btn ghost sm" onClick={onRemove}>Remove</button></div>
-      <div className="small muted mt">How long?</div>
+      <div className="small muted mt">How long was it?</div>
       <div className="chips">{(['short', 'medium', 'long'] as Duration[]).map((d) => <button key={d} className={`chip sm ${draft.duration === d ? 'on' : ''}`} onClick={() => set({ duration: d })}>{DURATION_WORDS[d]}</button>)}</div>
-      <div className="small muted mt">How hard?</div>
+      <div className="small muted mt">How hard was it?</div>
       <div className="chips">{(['easy', 'medium', 'hard'] as Intensity[]).map((d) => <button key={d} className={`chip sm ${draft.intensity === d ? 'on' : ''}`} onClick={() => set({ intensity: d })}>{INTENSITY_WORDS[d]}</button>)}</div>
-      <div className="small muted mt">Anything big?</div>
+      <div className="small muted mt">Was it a big one? (tap if yes)</div>
       <div className="chips">
         {draft.sport === 'baseball' && <button className={`chip sm ${draft.heavyThrowing ? 'on' : ''}`} onClick={() => set({ heavyThrowing: !draft.heavyThrowing })}>Lots of throwing</button>}
         {draft.sport === 'baseball' && <button className={`chip sm ${draft.pitched ? 'on' : ''}`} onClick={() => set({ pitched: !draft.pitched, heavyThrowing: !draft.pitched ? true : draft.heavyThrowing })}>Pitched</button>}
         <button className={`chip sm ${draft.heavyRunning ? 'on' : ''}`} onClick={() => set({ heavyRunning: !draft.heavyRunning })}>Lots of running or jumping</button>
-        <button className={`chip sm ${draft.tournament ? 'on' : ''}`} onClick={() => set({ tournament: !draft.tournament })}>Tournament / all day</button>
+        <button className={`chip sm ${draft.tournament ? 'on' : ''}`} onClick={() => set({ tournament: !draft.tournament })}>Tournament or all-day games</button>
       </div>
       {draft.pitched && (
         <div className="field mt"><label>Pitch count (if you know it)</label><input className="input" inputMode="numeric" placeholder="for example 42" value={draft.pitchCount ?? ''} onChange={(e) => set({ pitchCount: e.target.value ? parseInt(e.target.value.replace(/\D/g, ''), 10) || undefined : undefined })} /></div>
@@ -82,40 +82,40 @@ export function CheckInSheet({ name, initialSports, initial, onSave, onClose }: 
     <Sheet
       title={`How are you today, ${name}?`}
       onClose={onClose}
-      footer={<><button className="btn" onClick={onClose}>Cancel</button><button className="btn primary" disabled={busy} onClick={async () => { setBusy(true); await onSave(sports, draft); setBusy(false); }}>Save check-in</button></>}
+      footer={<><button className="btn" onClick={onClose}>Cancel</button><button className="btn primary" disabled={busy} onClick={async () => { setBusy(true); await onSave(sports, draft); setBusy(false); }}>Save my answers</button></>}
     >
       <h3>What did you already do today?</h3>
-      <p className="small muted">Tap a sport to add it. Nothing today? Skip this part.</p>
+      <p className="small muted">Tap one to add it. Nothing today? Skip this part.</p>
       <div className="chips mb">
         {SPORTS.map((s) => <button key={s} className="chip sm" onClick={() => setSports([...sports, newSportDraft(s)])}>+ {SPORT_WORDS[s]}</button>)}
       </div>
       <div className="list mb">
         {sports.map((d, i) => <SportCard key={i} draft={d} onChange={(x) => setSports(sports.map((y, j) => (j === i ? x : y)))} onRemove={() => setSports(sports.filter((_, j) => j !== i))} />)}
       </div>
-      <h3>Energy</h3>
+      <h3>How much energy do you have?</h3>
       <FiveScale value={draft.energy} words={FEEL_WORDS} onChange={(v) => set({ energy: v })} />
-      <h3 className="mt">Sleep last night</h3>
+      <h3 className="mt">How did you sleep last night?</h3>
       <FiveScale value={draft.sleep} words={SLEEP_WORDS} onChange={(v) => set({ sleep: v })} />
-      <h3 className="mt">Sore or tired muscles?</h3>
+      <h3 className="mt">Are your muscles sore or tired?</h3>
       <div className="btn-grid cols-3">
         {([['none', 'Not really'], ['some', 'A little'], ['alot', 'A lot']] as Array<[CheckInDraft['soreness'], string]>).map(([k, l]) => <button key={k} className={`btn ${draft.soreness === k ? 'primary' : ''}`} onClick={() => set({ soreness: k })}>{l}</button>)}
       </div>
-      <h3 className="mt">Did you take them today?</h3>
-      <p className="small muted">Be honest; a no is fine, it just gets written down.</p>
+      <h3 className="mt">Did you take your creatine and multivitamin today?</h3>
+      <p className="small muted">Tap it if you took it. If you did not, that is fine. It just gets written down.</p>
       <div className="btn-grid cols-2">
         <button className={`btn ${draft.creatine ? 'primary' : ''}`} onClick={() => set({ creatine: !draft.creatine })}>{draft.creatine ? '✓ ' : ''}Creatine</button>
         <button className={`btn ${draft.multivitamin ? 'primary' : ''}`} onClick={() => set({ multivitamin: !draft.multivitamin })}>{draft.multivitamin ? '✓ ' : ''}Multivitamin</button>
       </div>
-      <h3 className="mt">Anything wrong?</h3>
-      <p className="small muted">Tired muscles are normal. These are different.</p>
+      <h3 className="mt">Is anything wrong?</h3>
+      <p className="small muted">Tired muscles are normal. These three are different. Tap one only if it is true.</p>
       <div className="chips">
         <button className={`chip red ${draft.pain ? 'on' : ''}`} onClick={() => set({ pain: !draft.pain })}>Something hurts</button>
         <button className={`chip red ${draft.sick ? 'on' : ''}`} onClick={() => set({ sick: !draft.sick })}>Feeling sick</button>
-        <button className={`chip red ${draft.dizzy ? 'on' : ''}`} onClick={() => set({ dizzy: !draft.dizzy })}>Dizzy or lightheaded</button>
+        <button className={`chip red ${draft.dizzy ? 'on' : ''}`} onClick={() => set({ dizzy: !draft.dizzy })}>Dizzy</button>
       </div>
       {draft.pain && <div className="field mt"><label>Where does it hurt?</label><input className="input" value={draft.painWhere ?? ''} onChange={(e) => set({ painWhere: e.target.value })} placeholder="for example right elbow" /></div>}
-      {red && <div className="banner danger mt">No training today. You still get the Easy day (two minutes of breathing), and it still counts. Tell a parent how you feel; if it is more than tired muscles, a doctor decides, not the app.</div>}
-      <div className="field mt"><label>Anything else? (optional)</label><input className="input" value={draft.note ?? ''} onChange={(e) => set({ note: e.target.value })} placeholder="Legs are tired from practice" /></div>
+      {red && <div className="banner danger mt">No workout today. You still get Just breathing (two minutes of slow breathing), and it still counts. Tell a parent how you feel; if it is more than tired muscles, a parent decides about the doctor, not the app.</div>}
+      <div className="field mt"><label>Anything else you want to say? (you can leave this empty)</label><input className="input" value={draft.note ?? ''} onChange={(e) => set({ note: e.target.value })} placeholder="Legs are tired from practice" /></div>
     </Sheet>
   );
 }

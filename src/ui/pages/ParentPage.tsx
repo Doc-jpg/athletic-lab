@@ -111,7 +111,7 @@ export function ParentPage() {
           </div>
           <div className="card">
             <h3>Progress</h3>
-            <p className="small">{sessions.filter((s) => s.status === 'done' && s.kind !== 'foundations').length} sessions total, {sessions.filter((s) => s.status === 'done' && s.kind === 'foundations').length} Daily 5s. <Link to="/progress">Full progress page</Link> (same one {name} sees).</p>
+            <p className="small">{sessions.filter((s) => s.status === 'done' && s.kind !== 'foundations').length} sessions total, {sessions.filter((s) => s.status === 'done' && s.kind === 'foundations').length} Five-minute mini workouts. <Link to="/progress">Full progress page</Link> (same one {name} sees).</p>
           </div>
         </>
       )}
@@ -119,7 +119,7 @@ export function ParentPage() {
       {tab === 'exercises' && (
         <>
           <div className="banner info small">Videos: most moves have a demonstration that plays inside the app. The best demo is a ten-second clip of {name} doing it right: open any exercise (tap its name, or find it under Workouts) and use "Add a clip of him". {clips.length ? `${clips.length} clip${clips.length === 1 ? '' : 's'} so far.` : 'No clips yet.'}{settings.sync?.enabled ? '' : ' Clips need the phones linked first.'}</div>
-          <div className="banner info small">Form check: you watched the first reps and the movement looked right. A weighted exercise stays out of sessions until it is checked. Approving 5 lb or 10 lb only lets {name} pick that weight; the app never raises it on its own.</div>
+          <div className="banner info small">Form check: you watched the first reps and the movement looked right. A weighted exercise stays out of workouts until it is checked. Approving 5 lb or 10 lb only lets {name} pick that weight; the app never raises it on its own.</div>
           {(Object.keys(AREA_WORDS) as Array<keyof typeof AREA_WORDS>).map((area) => {
             const list = exercises.filter((e) => e.area === area && !e.archived && (e.needsFormCheck || e.loads.length > 1 || e.level !== 'beginner'));
             if (!list.length) return null;
@@ -187,7 +187,7 @@ export function ParentPage() {
 
           <div className="card">
             <h3>Sample data and starting over</h3>
-            <p className="small muted">Three weeks of made-up history, marked as sample, to see what Progress and the parent view look like before {name} has any. Remove it before his first real session.</p>
+            <p className="small muted">Three weeks of made-up history, marked as sample, to see what Progress and the parent view look like before {name} has any. Remove it before his first real workout.</p>
             <div className="col mt">
               {demoLoaded ? <button className="btn block" onClick={async () => { const n = await removeDemo(db); toast.show(`Removed ${n} sample records`); }}>Remove the sample data</button> : <button className="btn block" onClick={async () => { await loadDemo(db); toast.show('Three weeks of sample data added'); }}>Add three weeks of sample data</button>}
               <button className="btn ghost sm" style={{ color: 'var(--danger)' }} onClick={() => setResetOpen(true)}>Erase everything on this phone</button>
