@@ -5,6 +5,7 @@ import { useMode } from '../mode';
 import { CheckInSheet, SportCard, newSportDraft, toLog, type SportDraft, type CheckInDraft } from '../components/CheckInSheet';
 import { Sheet, useToast } from '../components/Sheet';
 import { TourOffer } from '../components/Tour';
+import { JobsCard } from '../components/JobsCard';
 import { readinessFor, recordCheckIn, planSession, ensureMessageShown, type TodayContext } from '../../engine/today';
 import { addSportsLog, db, updateSession } from '../../db/db';
 import { pickMessage, daysSinceLastSession, CATEGORY_WORDS } from '../../engine/habits';
@@ -100,6 +101,9 @@ export function TodayPage() {
           </div>
         )}
       </div>
+
+      {/* 1b. My jobs */}
+      <JobsCard checkIn={checkIn} onAnswer={() => setCheckInOpen(true)} />
 
       {/* 2. Sports already logged */}
       <div className="card">

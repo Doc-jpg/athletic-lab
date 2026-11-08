@@ -23,9 +23,10 @@ export function VisibilityCard() {
       <ul className="small step-list">
         <li>Workouts you finished or skipped, and how they felt</li>
         <li>Sports you added, your answers to the questions, and your gentle days</li>
+        <li>Your jobs: creatine and multivitamin, the dog poop scoop days, shots on the goal</li>
         <li>Your progress and badges</li>
         <li>Journal notes, unless you marked them private</li>
-        <li>Warnings: something hurt, you felt sick or dizzy, you stopped a workout, a tournament day, or a week with no rest day</li>
+        <li>Warnings: something hurt, you felt sick or dizzy, you stopped a workout, a tournament day, a week with no rest day, or a scoop day that got missed</li>
       </ul>
       <p className="small">{settings.sync?.enabled ? `All of that goes to ${parent}'s phone on its own whenever this phone has a signal, so nobody has to send anything. ` : ''}<strong>Not shown:</strong> journal notes you marked private. Nothing is hidden; this list is the whole list. {parent} can also say which weights are okay, turn moves on or off, and set how many strength days a week.</p>
       {!settings.visibilityNoticeSeenAt && athlete && <button className="btn sm" onClick={() => saveSettings({ visibilityNoticeSeenAt: nowIso() })}>Got it</button>}

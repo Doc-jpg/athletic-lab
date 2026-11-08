@@ -33,6 +33,9 @@ const any = () => 1;
 const hasSport = (c: MessageContext, s: string) => c.todayLogs.some((l) => l.sport === s);
 
 export const MESSAGES: Msg[] = [
+  { key: 'job-scoop-ahead', category: 'consistency', text: 'Tomorrow is a scoop day. If practice, a game, rain or snow is coming tomorrow evening, scoop tonight. Thinking ahead is the whole job.', fit: (c) => ([0, 3].includes(new Date(c.day + 'T12:00:00').getDay()) ? 2.5 : 0) },
+  { key: 'job-scoop-today', category: 'consistency', text: 'Scoop day. Poop in the trash before it goes out, or before the mower comes. Five minutes, done, nobody has to ask.', fit: (c) => ([1, 4].includes(new Date(c.day + 'T12:00:00').getDay()) ? 2.5 : 0) },
+  { key: 'fun-hoop-light', category: 'fun', text: 'The goal has a light now. Twenty free throws after dinner is a workout nobody has to plan.', fit: any },
   { key: 'hyd-bball', category: 'hydration', text: 'Basketball day? Water bottle in the bag, and drink at every break, not just when you are thirsty.', fit: (c) => (hasSport(c, 'basketball') ? 3 : 0) },
   { key: 'hyd-baseball', category: 'hydration', text: 'Long time on the field today. Drink water between innings. If you feel thirsty, you already needed it a while ago.', fit: (c) => (hasSport(c, 'baseball') ? 3 : 0) },
   { key: 'hyd-plain', category: 'hydration', text: 'Water first. A glass when you wake up and one with every meal is most of the job.', fit: any },

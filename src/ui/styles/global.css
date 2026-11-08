@@ -266,3 +266,5 @@ details.fold summary { cursor: pointer; font-weight: 700; min-height: 40px; disp
 .tour-card h3 { margin: 0 0 4px; text-transform: none; letter-spacing: 0; font-size: 18px; color: var(--ink); }
 .tour-card .step { font-size: 12px; color: var(--ink-3); }
 .tour-card.top { bottom: auto; top: calc(12px + env(safe-area-inset-top)); }
+
+button.link { background: none; border: 0; padding: 0; color: var(--accent); font: inherit; text-decoration: underline; cursor: pointer; }

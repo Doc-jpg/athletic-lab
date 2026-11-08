@@ -1,5 +1,12 @@
 # Decisions and lessons
 
+## 2026-11-08, v0.8.0, My jobs (Deren: "pushes that are more kind of personal responsibility... Eli is supposed to scoop the dog poop at least, and I mean at least, minimum, Monday evening and Thursday evening. That's because the trash gets taken out Monday night for Tuesday morning pick up, and the yard gets mowed on Fridays... he needs to think ahead... he's getting a new basketball goal installed today and it has a light")
+
+- A **My jobs** card on Today, right under the daily questions. Three lines: creatine and multivitamin (read from the day's answers, with a "Took them now? Change my answers" link), **Scoop the dog poop**, and **Shots on the goal** ("not a job, just a good idea").
+- The poop schedule is in `src/engine/jobs.ts`: scoop days are Monday (the trash goes out tonight) and Thursday (the lawn gets mowed tomorrow). The card says which it is and why, in those words. The day before (Sunday, Wednesday) it asks him to think ahead: "do you have practice or a game tomorrow evening, or is rain or snow coming? If yes, scoop today instead." A scoop the day before counts for the scoop day. A missed scoop day follows him for two days ("You missed Monday's scoop. Do it today, the first chance you get.") and raises one parent alert (`job-missed`), then the next scoop day takes over. Any other day: "No scoop due today. Next scoop day: Thursday. Scooping sooner is always fine." No weather data in the app (it is offline-first); the question does the thinking-ahead.
+- Stored as habit logs (`scoop`, `shots`), so they sync, back up and show on the parent week ("scooped the poop" in green on the day; the weekly line lists which days). Both are also on the Habits page. Two daily messages back it up on scoop days and the day before; one about the lit goal.
+- Nothing is scored, nothing nags twice. The card is the instruction; the parent alert is the consequence.
+
 ## 2026-11-08, v0.7.0, written for a literal reader (Deren, after the same pass on Vivi's app: "push some of these simplified explanations to Eli's app as well. Feel like sometimes you get too cute and rather you just be clear")
 
 - **Labels say what they are.** Looks are "Blue and orange / Plain and simple / Dark with lime" with color dots, not Playful / Minimal / Pro sports. Hero line: "Strength, stretching, quick feet and good habits for a young athlete. A little bit every day."

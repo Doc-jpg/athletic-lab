@@ -41,7 +41,7 @@ export const BADGES: BadgeDef[] = [
   { key: 'coord-first', title: 'Quick feet', text: 'Your first Quick feet workout.', test: (s) => done(s, 'coordination').length >= 1 },
   { key: 'shortstop-first', title: 'Shortstop', text: 'Your first Shortstop Movement workout.', test: (s) => done(s, 'movement').length >= 1 },
   { key: 'shortstop-10', title: 'Ten at shortstop', text: 'Ten Shortstop Movement workouts. Your first step is getting faster without thinking about it.', test: (s) => done(s, 'movement').length >= 10 },
-  { key: 'habits-10', title: 'Habit builder', text: 'Ten healthy habits checked off.', test: (s) => s.habits.filter((h) => h.done).length >= 10 }
+  { key: 'habits-10', title: 'Habit builder', text: 'Ten healthy habits checked off.', test: (s) => s.habits.filter((h) => h.done && h.habit !== 'shots').length >= 10 }
 ];
 
 /** Badges newly earned given current state; the caller saves them. */

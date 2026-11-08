@@ -335,7 +335,7 @@ export interface SafetyFlag {
   id: string;
   ts: Iso;
   day: Day;
-  kind: 'pain' | 'sick' | 'dizzy' | 'stopped' | 'tournament' | 'heavy-week' | 'no-rest-day';
+  kind: 'pain' | 'sick' | 'dizzy' | 'stopped' | 'tournament' | 'heavy-week' | 'no-rest-day' | 'job-missed';
   text: string;
   acknowledgedAt?: Iso;
   acknowledgedBy?: string;
@@ -357,7 +357,8 @@ export interface JournalEntry {
   updatedAt: Iso;
 }
 
-export type HabitKey = 'water' | 'meal' | 'fruitveg' | 'sleep' | 'play' | 'foundations';
+/** 'scoop' and 'shots' were added 2026-11-08 for the jobs card: the dog poop schedule and the lit basketball goal. */
+export type HabitKey = 'water' | 'meal' | 'fruitveg' | 'sleep' | 'play' | 'foundations' | 'scoop' | 'shots';
 
 export interface HabitLog {
   id: string;

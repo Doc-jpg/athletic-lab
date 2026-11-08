@@ -6,13 +6,16 @@ import { setHabit } from '../../db/db';
 import { refreshRewards, readinessFor, planSession } from '../../engine/today';
 import { weekStartOf } from '../../engine/achievements';
 import type { HabitKey } from '../../engine/types';
+import { SCOOP_RULE } from '../../engine/jobs';
 
 const HABITS: Array<{ key: HabitKey; title: string; text: string }> = [
   { key: 'water', title: 'Water', text: 'A glass when you wake up, one with every meal, the bottle at practice.' },
   { key: 'meal', title: 'Real meals', text: 'Breakfast, lunch and dinner with protein in each one. No skipping breakfast.' },
   { key: 'fruitveg', title: 'Fruit and vegetables', text: 'At least one of each today.' },
   { key: 'sleep', title: 'Good sleep plan', text: 'Screens off a bit early, bed at a time that gives 9 to 11 hours.' },
-  { key: 'play', title: 'Normal play', text: 'Bikes, tag, climbing, shooting hoops for fun. Counts for a lot.' }
+  { key: 'play', title: 'Normal play', text: 'Bikes, tag, climbing, shooting hoops for fun. Counts for a lot.' },
+  { key: 'scoop', title: 'Scooped the dog poop', text: SCOOP_RULE },
+  { key: 'shots', title: 'Shots on the goal', text: 'The goal has a light now. Any evening works.' }
 ];
 
 /** The Five-minute mini workout, the everyday habits, this week's missions, and the healthy-habits notes. No calories, no weight, no supplements by default. */
