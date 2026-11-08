@@ -322,6 +322,9 @@ export interface CheckIn {
   painWhere?: string;
   sick: boolean;
   dizzy: boolean;
+  /** The daily attestation Dad asked for (2026-11-07): did he take what he was given this morning. Undefined on check-ins made before this existed. */
+  creatine?: boolean;
+  multivitamin?: boolean;
   note?: string;
   /** The verdict this check-in produced, kept for history. */
   color: ReadinessColor;

@@ -26,6 +26,8 @@ export interface CheckInDraft {
   painWhere?: string;
   sick: boolean;
   dizzy: boolean;
+  creatine: boolean;
+  multivitamin: boolean;
   note?: string;
 }
 
@@ -70,9 +72,9 @@ function FiveScale({ value, words, onChange }: { value: Feel; words: Record<Feel
   );
 }
 
-export function CheckInSheet({ name, initialSports, onSave, onClose }: { name: string; initialSports?: SportDraft[]; onSave: (sports: SportDraft[], draft: CheckInDraft) => Promise<void>; onClose: () => void }) {
+export function CheckInSheet({ name, initialSports, initial, onSave, onClose }: { name: string; initialSports?: SportDraft[]; initial?: Partial<CheckInDraft>; onSave: (sports: SportDraft[], draft: CheckInDraft) => Promise<void>; onClose: () => void }) {
   const [sports, setSports] = useState<SportDraft[]>(initialSports ?? []);
-  const [draft, setDraft] = useState<CheckInDraft>({ energy: 4, sleep: 4, soreness: 'none', pain: false, sick: false, dizzy: false });
+  const [draft, setDraft] = useState<CheckInDraft>({ energy: 4, sleep: 4, soreness: 'none', pain: false, sick: false, dizzy: false, creatine: false, multivitamin: false, ...(initial ?? {}) });
   const [busy, setBusy] = useState(false);
   const set = (p: Partial<CheckInDraft>) => setDraft({ ...draft, ...p });
   const red = draft.pain || draft.sick || draft.dizzy;
@@ -97,6 +99,12 @@ export function CheckInSheet({ name, initialSports, onSave, onClose }: { name: s
       <h3 className="mt">Sore or tired muscles?</h3>
       <div className="btn-grid cols-3">
         {([['none', 'Not really'], ['some', 'A little'], ['alot', 'A lot']] as Array<[CheckInDraft['soreness'], string]>).map(([k, l]) => <button key={k} className={`btn ${draft.soreness === k ? 'primary' : ''}`} onClick={() => set({ soreness: k })}>{l}</button>)}
+      </div>
+      <h3 className="mt">Did you take them today?</h3>
+      <p className="small muted">Be honest; a no is fine, it just gets written down.</p>
+      <div className="btn-grid cols-2">
+        <button className={`btn ${draft.creatine ? 'primary' : ''}`} onClick={() => set({ creatine: !draft.creatine })}>{draft.creatine ? '✓ ' : ''}Creatine</button>
+        <button className={`btn ${draft.multivitamin ? 'primary' : ''}`} onClick={() => set({ multivitamin: !draft.multivitamin })}>{draft.multivitamin ? '✓ ' : ''}Multivitamin</button>
       </div>
       <h3 className="mt">Anything wrong?</h3>
       <p className="small muted">Tired muscles are normal. These are different.</p>

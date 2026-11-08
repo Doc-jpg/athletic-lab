@@ -57,12 +57,15 @@ const shot = (page, name) => page.screenshot({ path: path.join(shotsDir, `${name
   await page.click('text=+ Baseball');
   await page.click('text=Pitched');
   await page.fill('input[placeholder="for example 42"]', '40');
+  await page.click('role=button[name="Creatine"]');
+  await page.click('role=button[name="Multivitamin"]');
   await page.click('role=button[name="Save check-in"]');
   await page.waitForSelector('text=Checked in');
   await settle();
   let t = await body();
   expect('yellow day after a medium practice', /Easy workout today/.test(t), true);
   expect('arm blocked after pitching', /no extra arm or shoulder work/.test(t), true);
+  expect('creatine and multivitamin attested on the check-in', /Creatine ✓ · Vitamin ✓/.test(t), true);
   expect('daily message shown', /Recovery|Hydration|Food|Sleep|Consistency|Confidence|Mobility|Challenge/.test(t), true);
   await shot(page, '02_today_checked_in');
 
@@ -226,6 +229,7 @@ const shot = (page, name) => page.screenshot({ path: path.join(shotsDir, `${name
   t = await body();
   expect('parent sees the pain alert', /Reported pain/.test(t), true);
   expect('parent sees the week', /last 7 days/i.test(t), true);
+  expect('parent sees the creatine and vitamin answer', /creatine yes, vitamin yes/.test(t), true);
   await shot(page, '08_parent');
   await page.click('role=button[name="Exercises"]');
   await page.waitForSelector('text=One-arm row, hand on a chair');

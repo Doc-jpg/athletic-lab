@@ -1,5 +1,11 @@
 # Decisions and lessons
 
+## 2026-11-07 (night), v0.6.2, creatine and multivitamin on the check-in (Deren: "I need him to attest that he took his creatine and that he took his multivitamin that day")
+
+- Two buttons under the sleep and soreness questions: Creatine, Multivitamin. Tap to say yes; a no is just a no and gets written down. Saved on the day's check-in (`creatine`, `multivitamin`), so it syncs and backs up like everything else; older check-ins have neither field and show nothing.
+- Today's "Checked in" line shows Creatine ✓/✗ and Vitamin ✓/✗. The parent view's week shows yes/no per day and a count for the week.
+- The app still does not suggest any supplement; that stays a parent's decision. The FAQ and the Habits page were reworded from "never" to "the app does not suggest; the check-in records what you were given". The library and message pool still never mention it (tested).
+
 Newest first. Append here; this is where the next session starts.
 
 ## 2026-11-07 (evening), v0.6.1, the player did not tell him what to tap (Eli's first real session)

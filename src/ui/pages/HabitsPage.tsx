@@ -82,7 +82,7 @@ export function HabitsPage() {
         <h3>Food, water, sleep: the short version</h3>
         <ul className="step-list small">
           <li><strong>Water first.</strong> Sports drinks only after more than an hour of hard work or in real heat. Energy drinks, never.</li>
-          <li><strong>Real food beats powders.</strong> Eggs, milk, yogurt, chicken, beans, peanut butter, rice, pasta, potatoes, fruit, vegetables. Growing athletes do not need protein powder or creatine; the app will never suggest them.</li>
+          <li><strong>Real food beats powders.</strong> Eggs, milk, yogurt, chicken, beans, peanut butter, rice, pasta, potatoes, fruit, vegetables. The app does not suggest powders or pills; what you take in the morning is between you and your parents, and the check-in records it.</li>
           <li><strong>Carbs are fuel for sport.</strong> Bread, rice, pasta, fruit before and after practice.</li>
           <li><strong>Sleep is when you get stronger.</strong> 9 to 11 hours at this age. Short sleep shows up as a yellow day.</li>
           <li><strong>No dieting, no weigh-ins.</strong> This app does not track weight, body fat or appearance, on purpose.</li>

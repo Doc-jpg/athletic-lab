@@ -98,7 +98,7 @@ export function ParentPage() {
                   <div key={d} className="item" style={{ alignItems: 'flex-start' }}>
                     <div style={{ minWidth: 64 }}><strong>{fmtDate(d).replace(/,.*/, '')}</strong><div className="tiny muted">{d.slice(5)}</div></div>
                     <div className="grow small">
-                      {c ? <div><span className={`pill ${c.color}`}>{COLOR_WORDS[c.color]}</span> energy {c.energy}/5, sleep {c.sleep}/5{c.pain ? `, pain${c.painWhere ? ` (${c.painWhere})` : ''}` : ''}{c.sick ? ', sick' : ''}{c.dizzy ? ', dizzy' : ''}</div> : <div className="muted">No check-in</div>}
+                      {c ? <div><span className={`pill ${c.color}`}>{COLOR_WORDS[c.color]}</span> energy {c.energy}/5, sleep {c.sleep}/5{c.pain ? `, pain${c.painWhere ? ` (${c.painWhere})` : ''}` : ''}{c.sick ? ', sick' : ''}{c.dizzy ? ', dizzy' : ''}{c.creatine !== undefined ? <> · creatine <strong>{c.creatine ? 'yes' : 'no'}</strong>, vitamin <strong>{c.multivitamin ? 'yes' : 'no'}</strong></> : ''}</div> : <div className="muted">No check-in</div>}
                       {ls.map((l) => <div key={l.id}>{l.sport}{l.tournament ? ' (tournament)' : ''}{l.pitched ? ` pitched${l.pitchCount ? ` ${l.pitchCount}` : ''}` : l.heavyThrowing ? ', lots of throwing' : ''}{l.heavyRunning ? ', lots of running' : ''} · {l.duration}, {l.intensity}</div>)}
                       {ss.map((s) => <div key={s.id}><Link to={`/sessions/${s.id}`}>{s.templateName}</Link> · {s.status}{s.overallDifficulty ? `, felt ${['', 'easy', 'pretty easy', 'okay', 'hard', 'very hard'][s.overallDifficulty]}` : ''}{s.note ? ` · "${s.note}"` : ''}</div>)}
                       {load > 0 && <div className="tiny muted">sport load {load}</div>}
@@ -107,7 +107,7 @@ export function ParentPage() {
                 );
               })}
             </div>
-            <p className="small muted mt">Strength and movement sessions this week: {weekSessions.filter((s) => (s.kind === 'strength' || s.kind === 'movement') && s.status === 'done').length} of {settings.strengthDaysPerWeek} planned. Recovery or red days: {weekCheckIns.filter((c) => c.color === 'orange' || c.color === 'red').length}.</p>
+            <p className="small muted mt">Strength and movement sessions this week: {weekSessions.filter((s) => (s.kind === 'strength' || s.kind === 'movement') && s.status === 'done').length} of {settings.strengthDaysPerWeek} planned. Recovery or red days: {weekCheckIns.filter((c) => c.color === 'orange' || c.color === 'red').length}. Creatine taken {weekCheckIns.filter((c) => c.creatine).length} of {weekCheckIns.length} check-in days, multivitamin {weekCheckIns.filter((c) => c.multivitamin).length} of {weekCheckIns.length}.</p>
           </div>
           <div className="card">
             <h3>Progress</h3>

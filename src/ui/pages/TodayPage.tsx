@@ -90,7 +90,7 @@ export function TodayPage() {
       <div className="card" data-tour="checkin">
         {checkIn ? (
           <div className="row between">
-            <div className="grow"><strong>Checked in</strong><div className="small muted">Energy {checkIn.energy}/5 · Sleep {checkIn.sleep}/5 · {checkIn.soreness === 'none' ? 'Not sore' : checkIn.soreness === 'some' ? 'A little sore' : 'Very sore'}{checkIn.pain ? ' · Something hurts' : ''}{checkIn.sick ? ' · Sick' : ''}</div></div>
+            <div className="grow"><strong>Checked in</strong><div className="small muted">Energy {checkIn.energy}/5 · Sleep {checkIn.sleep}/5 · {checkIn.soreness === 'none' ? 'Not sore' : checkIn.soreness === 'some' ? 'A little sore' : 'Very sore'}{checkIn.pain ? ' · Something hurts' : ''}{checkIn.sick ? ' · Sick' : ''}{checkIn.creatine !== undefined ? ` · Creatine ${checkIn.creatine ? '✓' : '✗'} · Vitamin ${checkIn.multivitamin ? '✓' : '✗'}` : ''}</div></div>
             <button className="btn sm" onClick={() => setCheckInOpen(true)}>Change</button>
           </div>
         ) : (
@@ -184,7 +184,7 @@ export function TodayPage() {
         )}
       </div>
 
-      {checkInOpen && <CheckInSheet name={name} onSave={saveCheckIn} onClose={() => setCheckInOpen(false)} />}
+      {checkInOpen && <CheckInSheet name={name} initial={checkIn ? { energy: checkIn.energy, sleep: checkIn.sleep, soreness: checkIn.soreness, pain: checkIn.pain, painWhere: checkIn.painWhere, sick: checkIn.sick, dizzy: checkIn.dizzy, creatine: !!checkIn.creatine, multivitamin: !!checkIn.multivitamin, note: checkIn.note } : undefined} onSave={saveCheckIn} onClose={() => setCheckInOpen(false)} />}
       {sportOpen && (
         <Sheet title="Add a sport" onClose={() => setSportOpen(null)} footer={<><button className="btn" onClick={() => setSportOpen(null)}>Cancel</button><button className="btn primary" onClick={async () => { await addSportsLog(toLog(sportOpen, day, mode)); setSportOpen(null); toast.show('Added'); }}>Add</button></>}>
           <div className="chips mb">{(['baseball', 'basketball', 'pe', 'running', 'play', 'other'] as Sport[]).map((s) => <button key={s} className={`chip sm ${sportOpen.sport === s ? 'on' : ''}`} onClick={() => setSportOpen({ ...sportOpen, sport: s })}>{SPORT_WORDS[s]}</button>)}</div>
