@@ -290,7 +290,8 @@ export interface Session {
 
 export type Sport = 'baseball' | 'basketball' | 'pe' | 'running' | 'swimming' | 'football' | 'soccer' | 'play' | 'other';
 export type Duration = 'short' | 'medium' | 'long'; // under 45, 45 to 90, over 90 minutes
-export type Intensity = 'easy' | 'medium' | 'hard';
+/** How hard he was going, in pictures a kid can match: messing around (driveway shoot-around, playing catch) counts as almost nothing. */
+export type Intensity = 'messing' | 'easy' | 'medium' | 'hard';
 
 export interface SportsLog {
   id: string;
@@ -428,7 +429,14 @@ export const FEEL_WORDS: Record<Feel, string> = { 1: 'None', 2: 'Low', 3: 'Okay'
 export const SLEEP_WORDS: Record<Feel, string> = { 1: 'Bad', 2: 'Not much', 3: 'Okay', 4: 'Good', 5: 'Great' };
 export const SPORT_WORDS: Record<Sport, string> = { baseball: 'Baseball', basketball: 'Basketball', pe: 'PE class', running: 'Running', swimming: 'Swimming', football: 'Football', soccer: 'Soccer', play: 'Playing outside', other: 'Something else' };
 export const DURATION_WORDS: Record<Duration, string> = { short: 'Short (less than 45 minutes)', medium: 'Normal (about an hour)', long: 'Long (more than an hour and a half)' };
-export const INTENSITY_WORDS: Record<Intensity, string> = { easy: 'Easy', medium: 'Medium', hard: 'Hard' };
+export const INTENSITY_WORDS: Record<Intensity, string> = { messing: 'Messing around', easy: 'Moving some', medium: 'Really playing', hard: 'All out' };
+/** One line under each effort choice, so the pick is about what it looked like, not a guess at a word. */
+export const INTENSITY_HELP: Record<Intensity, string> = {
+  messing: 'Shooting around in the driveway, playing catch, tossing a ball around. Not out of breath.',
+  easy: 'Practice drills, PE, a relaxed game. Out of breath a little, now and then.',
+  medium: 'A real game or scrimmage. Running up and down, sweating, breathing hard.',
+  hard: 'As hard as you could go, most of the time. Worn out after.'
+};
 /** The three looks, named by what they look like, because "Pro sports" is not a color. */
 export const THEME_WORDS: Record<ThemeChoice, { name: string; sub: string; colors: [string, string] }> = {
   play: { name: 'Blue and orange', sub: 'Light, with blue buttons', colors: ['#1f6feb', '#ff7a1a'] },

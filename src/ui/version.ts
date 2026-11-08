@@ -1,3 +1,3 @@
-export const APP_VERSION = '0.8.0';
+export const APP_VERSION = '0.9.0';
 declare const __APP_NAME__: string | undefined;
 export const APP_NAME = typeof __APP_NAME__ === 'string' ? __APP_NAME__ : 'Athletic Lab';

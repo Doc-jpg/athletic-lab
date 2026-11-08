@@ -4,7 +4,7 @@ import { useAthlete, useCheckIns, useExercises, useFlags, useMeta, useSessions, 
 import { useMode } from '../mode';
 import { db, saveSettings, setExerciseStatus, setParentPin, updateAthlete, clearAll } from '../../db/db';
 import { loadDemo, removeDemo } from '../../data/demo';
-import { addDays, newId, nowIso, type Load, type SupplementRecord } from '../../engine/types';
+import { addDays, newId, nowIso, DURATION_WORDS, INTENSITY_WORDS, type Load, type SupplementRecord } from '../../engine/types';
 import { LOAD_WORDS, AREA_WORDS } from '../../data/exercises';
 import { videosFor } from '../../data/videos';
 import { Sheet, Confirm, useToast } from '../components/Sheet';
@@ -100,7 +100,7 @@ export function ParentPage() {
                     <div style={{ minWidth: 64 }}><strong>{fmtDate(d).replace(/,.*/, '')}</strong><div className="tiny muted">{d.slice(5)}</div></div>
                     <div className="grow small">
                       {c ? <div><span className={`pill ${c.color}`}>{COLOR_WORDS[c.color]}</span> energy {c.energy}/5, sleep {c.sleep}/5{c.pain ? `, pain${c.painWhere ? ` (${c.painWhere})` : ''}` : ''}{c.sick ? ', sick' : ''}{c.dizzy ? ', dizzy' : ''}{c.creatine !== undefined ? <> · creatine <strong>{c.creatine ? 'yes' : 'no'}</strong>, vitamin <strong>{c.multivitamin ? 'yes' : 'no'}</strong></> : ''}</div> : <div className="muted">No check-in</div>}
-                      {ls.map((l) => <div key={l.id}>{l.sport}{l.tournament ? ' (tournament)' : ''}{l.pitched ? ` pitched${l.pitchCount ? ` ${l.pitchCount}` : ''}` : l.heavyThrowing ? ', lots of throwing' : ''}{l.heavyRunning ? ', lots of running' : ''} · {l.duration}, {l.intensity}</div>)}
+                      {ls.map((l) => <div key={l.id}>{l.sport}{l.tournament ? ' (tournament)' : ''}{l.pitched ? ` pitched${l.pitchCount ? ` ${l.pitchCount}` : ''}` : l.heavyThrowing ? ', lots of throwing' : ''}{l.heavyRunning ? ', lots of running' : ''} · {DURATION_WORDS[l.duration]}, {INTENSITY_WORDS[l.intensity] ?? l.intensity}</div>)}
                       {ss.map((s) => <div key={s.id}><Link to={`/sessions/${s.id}`}>{s.templateName}</Link> · {s.status}{s.overallDifficulty ? `, felt ${['', 'easy', 'pretty easy', 'okay', 'hard', 'very hard'][s.overallDifficulty]}` : ''}{s.note ? ` · "${s.note}"` : ''}</div>)}
                       {load > 0 && <div className="tiny muted">sport load {load}</div>}
                       {habits.some((h) => h.day === d && h.habit === 'scoop' && h.done) && <div className="tiny" style={{ color: 'var(--green)' }}>scooped the poop</div>}

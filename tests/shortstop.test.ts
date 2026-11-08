@@ -92,9 +92,10 @@ describe('Shortstop Movement: readiness, rotation, building and progression', ()
     expect(ids).toContain('ss-ninety');
   });
 
-  it('medium basketball with lots of jumping: yellow, legs blocked, Shortstop Movement becomes a light day', () => {
+  it('an hour of real basketball with lots of jumping: still a green day, but the legs are blocked, so Shortstop Movement becomes the Short gentle workout', () => {
     const r = assessReadiness({ day: DAY, checkIn: fine, logs: [log({ duration: 'medium', intensity: 'medium', heavyRunning: true })], sessions: [], settings, planned: { kind: 'movement', templateId: 'shortstop', name: 'Shortstop Movement' } });
-    expect(r.color).toBe('yellow');
+    expect(r.color).toBe('green');
+    expect(r.blocked).toContain('legs');
     expect(r.offer?.templateId).toBe('light');
   });
 

@@ -1,16 +1,20 @@
 import React, { useState } from 'react';
 import { Sheet } from './Sheet';
 import type { Day, Feel, Sport, Duration, Intensity, SportsLog, Who } from '../../engine/types';
-import { FEEL_WORDS, SLEEP_WORDS, SPORT_WORDS, DURATION_WORDS, INTENSITY_WORDS } from '../../engine/types';
+import { FEEL_WORDS, SLEEP_WORDS, SPORT_WORDS, DURATION_WORDS, INTENSITY_WORDS, INTENSITY_HELP } from '../../engine/types';
 
 /**
  * The readiness check-in. One sheet, two parts: what you did today (sports) and how you feel.
  * Defaults are "a normal day", so a kid with nothing to report taps Save in two seconds.
+ * The one thing with no default is how hard a sport was: the first version defaulted to "Medium", a driveway
+ * shoot-around got saved as a medium hour, and a lifting day turned into a stretch (2026-11-08). Now the effort
+ * question comes first, describes what each level looks like, and must be answered before Save works.
  */
 export interface SportDraft {
   sport: Sport;
   duration: Duration;
-  intensity: Intensity;
+  /** Undefined until he picks one; Save stays off until every sport has an answer. */
+  intensity?: Intensity;
   heavyThrowing: boolean;
   pitched: boolean;
   pitchCount?: number;
@@ -38,10 +42,19 @@ export function SportCard({ draft, onChange, onRemove }: { draft: SportDraft; on
   return (
     <div className="card">
       <div className="row between"><strong>{SPORT_WORDS[draft.sport]}</strong><button className="btn ghost sm" onClick={onRemove}>Remove</button></div>
+      <div className="small muted mt">How hard were you going? Pick the one that looks most like what you did.</div>
+      <div className="list mt" data-testid="effort">
+        {(['messing', 'easy', 'medium', 'hard'] as Intensity[]).map((d) => (
+          <button key={d} className={`btn effort ${draft.intensity === d ? 'primary' : ''}`} onClick={() => set({ intensity: d })} aria-pressed={draft.intensity === d}>
+            <span className="effort-name">{draft.intensity === d ? '✓ ' : ''}{INTENSITY_WORDS[d]}</span>
+            <span className="effort-help">{INTENSITY_HELP[d]}</span>
+          </button>
+        ))}
+      </div>
+      {!draft.intensity && <div className="small mt" style={{ color: 'var(--orange)' }}>Pick one of the four before you save. It decides whether today changes.</div>}
       <div className="small muted mt">How long was it?</div>
       <div className="chips">{(['short', 'medium', 'long'] as Duration[]).map((d) => <button key={d} className={`chip sm ${draft.duration === d ? 'on' : ''}`} onClick={() => set({ duration: d })}>{DURATION_WORDS[d]}</button>)}</div>
-      <div className="small muted mt">How hard was it?</div>
-      <div className="chips">{(['easy', 'medium', 'hard'] as Intensity[]).map((d) => <button key={d} className={`chip sm ${draft.intensity === d ? 'on' : ''}`} onClick={() => set({ intensity: d })}>{INTENSITY_WORDS[d]}</button>)}</div>
+      {draft.intensity === 'messing' && <p className="small muted mt">Messing around does not change your workout, even for a long time. Only hard playing for an hour or more does.</p>}
       <div className="small muted mt">Was it a big one? (tap if yes)</div>
       <div className="chips">
         {draft.sport === 'baseball' && <button className={`chip sm ${draft.heavyThrowing ? 'on' : ''}`} onClick={() => set({ heavyThrowing: !draft.heavyThrowing })}>Lots of throwing</button>}
@@ -57,11 +70,16 @@ export function SportCard({ draft, onChange, onRemove }: { draft: SportDraft; on
 }
 
 export function newSportDraft(sport: Sport): SportDraft {
-  return { sport, duration: 'medium', intensity: 'medium', heavyThrowing: false, pitched: false, heavyRunning: false, tournament: false };
+  return { sport, duration: 'medium', heavyThrowing: false, pitched: false, heavyRunning: false, tournament: false };
+}
+
+/** True when every sport on the sheet has its effort answered; Save waits for this. */
+export function sportsComplete(sports: SportDraft[]): boolean {
+  return sports.every((d) => !!d.intensity);
 }
 
 export function toLog(d: SportDraft, day: Day, by: Who): Omit<SportsLog, 'id' | 'ts'> {
-  return { day, sport: d.sport, duration: d.duration, intensity: d.intensity, heavyThrowing: d.heavyThrowing || d.pitched, pitched: d.pitched, pitchCount: d.pitchCount, heavyRunning: d.heavyRunning, tournament: d.tournament, by };
+  return { day, sport: d.sport, duration: d.duration, intensity: d.intensity ?? 'easy', heavyThrowing: d.heavyThrowing || d.pitched, pitched: d.pitched, pitchCount: d.pitchCount, heavyRunning: d.heavyRunning, tournament: d.tournament, by };
 }
 
 function FiveScale({ value, words, onChange }: { value: Feel; words: Record<Feel, string>; onChange: (v: Feel) => void }) {
@@ -78,14 +96,15 @@ export function CheckInSheet({ name, initialSports, initial, onSave, onClose }: 
   const [busy, setBusy] = useState(false);
   const set = (p: Partial<CheckInDraft>) => setDraft({ ...draft, ...p });
   const red = draft.pain || draft.sick || draft.dizzy;
+  const complete = sportsComplete(sports);
   return (
     <Sheet
       title={`How are you today, ${name}?`}
       onClose={onClose}
-      footer={<><button className="btn" onClick={onClose}>Cancel</button><button className="btn primary" disabled={busy} onClick={async () => { setBusy(true); await onSave(sports, draft); setBusy(false); }}>Save my answers</button></>}
+      footer={<><button className="btn" onClick={onClose}>Cancel</button><button className="btn primary" disabled={busy || !complete} title={complete ? undefined : 'Pick how hard each sport was first'} onClick={async () => { setBusy(true); await onSave(sports, draft); setBusy(false); }}>Save my answers</button></>}
     >
       <h3>What did you already do today?</h3>
-      <p className="small muted">Tap one to add it. Nothing today? Skip this part.</p>
+      <p className="small muted">Tap one to add it. Nothing today? Skip this part. Shooting around in the driveway or playing catch counts as "Messing around", and that does not change your workout.</p>
       <div className="chips mb">
         {SPORTS.map((s) => <button key={s} className="chip sm" onClick={() => setSports([...sports, newSportDraft(s)])}>+ {SPORT_WORDS[s]}</button>)}
       </div>

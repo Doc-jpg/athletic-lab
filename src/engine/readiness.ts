@@ -8,9 +8,14 @@
  * Hard rules never relax (same lesson as Dugout Lab's generator):
  *   RED    pain, illness, dizziness or other significant symptoms: no training, tell a parent. The Just breathing (two
  *          minutes of breathing) is still offered, because there is always something and it keeps the habit.
- *   ORANGE heavy sports workload today (or an all-day tournament): the five-minute stretch is the whole workout.
- *   YELLOW moderate workload, or poor sleep/energy, or a strength session inside 48 hours: reduced volume, no loading.
- *   GREEN  fresh and recovered: the planned session.
+ *   ORANGE a huge sports day (a long all-out game, an all-day tournament, two real activities that add up):
+ *          the five-minute stretch is the whole workout.
+ *   YELLOW a big sports day (an hour or more of hard playing), or poor sleep/energy, or a strength session
+ *          inside 48 hours: reduced volume, no loading.
+ *   GREEN  fresh and recovered: the planned session. An hour of a real game is still green: he came here to lift.
+ * Sport load (2026-11-08 change, after a driveway shoot-around turned a lifting day into a stretch): the effort
+ * question asks what it looked like, not how it felt. "Messing around" (shooting around, playing catch) scores 0,
+ * however long it went on, because time is not exertion. Only hard playing for an hour or more changes the day.
  * Body-part blocks: heavy throwing blocks arm and shoulder loading for today and tomorrow;
  * intense basketball, sprinting or running blocks extra jumping, sprinting and hard leg work.
  */
@@ -47,12 +52,27 @@ export interface Readiness {
 }
 
 const DUR = { short: 1, medium: 2, long: 3 } as const;
-const INT = { easy: 1, medium: 2, hard: 3 } as const;
+const INT = { messing: 0, easy: 1, medium: 2, hard: 3 } as const;
 
-/** One log's load score, 1 to 9. Tournaments count as the top of the range. */
+/** A day that changes the workout: an hour or more of hard playing (6), or a long real game (6). */
+export const BIG_DAY = 6;
+/** A day that is the workout: a long all-out game or a tournament (9). */
+export const HUGE_DAY = 9;
+
+/**
+ * One log's load score, 0 to 9. Tournaments count as the top of the range. Messing around is 0 for anything under
+ * an hour and a half and 1 after that: a long time in the driveway is still not exertion. Logs saved before the
+ * four-level effort question only have easy, medium and hard, and score the same as they always did.
+ */
 export function logLoad(l: SportsLog): number {
   if (l.tournament) return 9;
-  return DUR[l.duration] * INT[l.intensity];
+  if (l.intensity === 'messing') return l.duration === 'long' ? 1 : 0;
+  return DUR[l.duration] * (INT[l.intensity] ?? 2);
+}
+
+/** Logs that were real exercise, not messing around. */
+function realLogs(logs: SportsLog[]): SportsLog[] {
+  return logs.filter((l) => logLoad(l) >= 2);
 }
 
 export function dayLoad(logs: SportsLog[], day: Day): number {
@@ -61,7 +81,7 @@ export function dayLoad(logs: SportsLog[], day: Day): number {
 
 function isHeavyLegs(l: SportsLog): boolean {
   const score = logLoad(l);
-  return !!l.heavyRunning || !!l.tournament || ((l.sport === 'basketball' || l.sport === 'running' || l.sport === 'soccer' || l.sport === 'football') && score >= 6);
+  return !!l.heavyRunning || !!l.tournament || ((l.sport === 'basketball' || l.sport === 'running' || l.sport === 'soccer' || l.sport === 'football') && score >= BIG_DAY);
 }
 
 function isHeavyArm(l: SportsLog): boolean {
@@ -162,23 +182,27 @@ export function assessReadiness(input: ReadinessInput): Readiness {
   // Score the day.
   let color: ReadinessColor = 'green';
   const tournament = todayLogs.some((l) => l.tournament);
-  const twoSports = todayLogs.length >= 2 && loadToday >= 4;
+  const twoSports = realLogs(todayLogs).length >= 2 && loadToday >= HUGE_DAY - 1;
   if (tournament) { color = 'orange'; reasons.push('Tournament day. That was your workout. A five-minute stretch is all that is left.'); alerts.push('Tournament day logged.'); }
-  else if (loadToday >= 6) { color = 'orange'; reasons.push('You already did a lot of sport today (a long, hard one). You do not need anything extra.'); }
-  else if (twoSports) { color = 'orange'; reasons.push('Two things today add up to a big day.'); }
+  else if (loadToday >= HUGE_DAY) { color = 'orange'; reasons.push('You already did a lot of sport today (a long one, going all out). That was your workout. You do not need anything extra.'); }
+  else if (twoSports) { color = 'orange'; reasons.push('Two real activities today add up to a huge day. That was your workout.'); }
   else if (checkIn?.energy === 1) { color = 'orange'; reasons.push('You have no energy today. Five easy minutes and then rest is the smart choice.'); }
   else if (checkIn?.soreness === 'alot') { color = 'orange'; reasons.push('You are very sore. Sore muscles need a stretch and a good sleep, not more work.'); }
   else if (ratio >= 1.5) { color = 'orange'; reasons.push('This week has been a lot busier than usual. A stretch today keeps the rest of the week good.'); alerts.push('Sports load this week is more than 1.5 times the four-week average.'); }
   else {
     if (ratio >= 1.3) { color = 'yellow'; reasons.push('This week has been busier than usual, so today is lighter.'); }
-    if (loadToday >= 3) { color = 'yellow'; reasons.push('You already played today, so today is a lighter workout.'); }
-    if (loadYesterday >= 6 && color === 'green') { color = 'yellow'; reasons.push('Yesterday was a big day, so today stays lighter.'); }
+    if (loadToday >= BIG_DAY) { color = 'yellow'; reasons.push('You already had a big sport day today (an hour or more of hard playing), so today is a lighter workout.'); }
+    if (loadYesterday >= HUGE_DAY && color === 'green') { color = 'yellow'; reasons.push('Yesterday was a huge day (a long all-out game or a tournament), so today stays lighter.'); }
     if (checkIn?.energy === 2) { color = 'yellow'; reasons.push('Your energy is low today.'); }
     if (checkIn && checkIn.sleep <= 2) { color = 'yellow'; reasons.push('You did not sleep well, so today is lighter. Tonight, get a good sleep.'); }
     if (checkIn?.soreness === 'some') { color = 'yellow'; reasons.push('You are a little sore, so today is easier.'); }
     if (noRestDay) { color = 'yellow'; reasons.push('Six busy days in a row. A real rest day this week is part of the plan.'); alerts.push('No rest day in the last six days.'); }
   }
-  if (color === 'green') reasons.push('You feel fresh, slept okay, and nothing big happened today or yesterday.');
+  if (color === 'green') {
+    if (todayLogs.length > 0 && loadToday < 2) reasons.push('Messing around (shooting around, playing catch) is not a workout, so today is still a normal day.');
+    else if (todayLogs.length > 0) reasons.push('What you did today was not big enough to change your workout. Only an hour or more of hard playing does that. Today is a normal day.');
+    else reasons.push('You feel fresh, slept okay, and nothing big happened today or yesterday.');
+  }
 
   // What to offer.
   let offer: Readiness['offer'];

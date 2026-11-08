@@ -59,11 +59,29 @@ const shot = (page, name) => page.screenshot({ path: path.join(shotsDir, `${name
   expect('scooped it is recorded', /Scooped today\. Done\./.test(await body()), true);
   expect('the goal with the light is on the card', /The new goal has a light/.test(await body()), true);
 
-  // --- Acceptance 4: heavy throwing day check-in ---
-  console.log('Check-in with pitching');
+  // --- 2026-11-08: a driveway shoot-around must not change the day ---
+  console.log('Check-in with a shoot-around');
   await page.click('role=button[name="Answer the questions"]');
   await page.waitForSelector('text=How are you today, Eli?');
+  await page.click('text=+ Basketball');
+  expect('effort question comes first and in pictures', /How hard were you going\?/.test(await body()) && /Shooting around in the driveway/.test(await body()), true);
+  expect('save waits for the effort answer', await page.locator('role=button[name="Save my answers"]').isDisabled(), true);
+  await page.click('[data-testid="effort"] >> text=Messing around');
+  expect('messing around explains itself', /does not change your workout/.test(await body()), true);
+  await shot(page, '01b_checkin_effort');
+  await page.click('role=button[name="Save my answers"]');
+  await page.waitForSelector('text=You answered today');
+  await settle();
+  t = await body();
+  expect('shoot-around: still a fresh, normal day', /Fresh and ready/.test(t), true);
+  expect('shoot-around: the planned strength workout is offered', /Strength A/.test(t), true);
+
+  // --- Acceptance 4: heavy throwing day check-in ---
+  console.log('Check-in with pitching');
+  await page.click('role=button[name="Change my answers"]');
+  await page.waitForSelector('text=How are you today, Eli?');
   await page.click('text=+ Baseball');
+  await page.click('[data-testid="effort"] >> text=All out');
   await page.click('text=Pitched');
   await page.fill('input[placeholder="for example 42"]', '40');
   await page.click('role=button[name="Creatine"]');
@@ -72,7 +90,7 @@ const shot = (page, name) => page.screenshot({ path: path.join(shotsDir, `${name
   await page.waitForSelector('text=You answered today');
   await settle();
   t = await body();
-  expect('yellow day after a medium practice', /A short gentle workout today/.test(t), true);
+  expect('yellow day after an hour of all-out practice (the shoot-around did not count toward it)', /A short gentle workout today/.test(t), true);
   expect('arm blocked after pitching', /no extra arm or shoulder work/.test(t), true);
   expect('creatine and multivitamin attested on the check-in', /Creatine yes · Multivitamin yes/.test(t), true);
   expect('daily message shown', /Recovery|Hydration|Food|Sleep|Consistency|Confidence|Mobility|Challenge/.test(t), true);

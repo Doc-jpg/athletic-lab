@@ -25,10 +25,49 @@ describe('readiness engine', () => {
     expect(r.offer?.kind).toBe('recovery');
   });
 
-  it('acceptance 3b: a medium basketball day with lots of jumping still blocks legs and goes yellow', () => {
-    const r = assessReadiness({ day: DAY, checkIn: fine, logs: [log({ sport: 'basketball', duration: 'medium', intensity: 'medium', heavyRunning: true })], sessions: [], settings });
+  it('acceptance 3b: an hour of real basketball with lots of jumping blocks legs but keeps the day green (he still lifts, minus the leg work)', () => {
+    const r = assessReadiness({ day: DAY, checkIn: fine, logs: [log({ sport: 'basketball', duration: 'medium', intensity: 'medium', heavyRunning: true })], sessions: [], settings, planned: { kind: 'strength', templateId: 'strength-a', name: 'Strength A' } });
     expect(r.blocked).toEqual(expect.arrayContaining(['legs', 'jump']));
-    expect(r.color).toBe('yellow');
+    expect(r.color).toBe('green');
+    expect(r.offer?.templateId).toBe('strength-a');
+  });
+
+  it('2026-11-08: a driveway shoot-around is "messing around" and scores nothing, so it is a normal lifting day', () => {
+    for (const duration of ['short', 'medium'] as const) {
+      const l = log({ sport: 'basketball', duration, intensity: 'messing' });
+      expect(logLoad(l)).toBe(0);
+    }
+    expect(logLoad(log({ sport: 'basketball', duration: 'long', intensity: 'messing' }))).toBe(1);
+    const r = assessReadiness({ day: DAY, checkIn: fine, logs: [log({ sport: 'basketball', duration: 'long', intensity: 'messing' })], sessions: [], settings, planned: { kind: 'strength', templateId: 'strength-a', name: 'Strength A' } });
+    expect(r.color).toBe('green');
+    expect(r.offer?.templateId).toBe('strength-a');
+    expect(r.blocked).toEqual([]);
+    expect(r.reasons.join(' ')).toMatch(/Messing around .* not a workout/);
+  });
+
+  it('only an hour or more of hard playing changes the day: real hour green, all-out hour yellow, long all-out orange', () => {
+    const plan = { kind: 'strength' as const, templateId: 'strength-a', name: 'Strength A' };
+    const hourReal = assessReadiness({ day: DAY, checkIn: fine, logs: [log({ sport: 'baseball', duration: 'medium', intensity: 'medium' })], sessions: [], settings, planned: plan });
+    expect(hourReal.color).toBe('green');
+    expect(hourReal.reasons.join(' ')).toMatch(/not big enough to change your workout/);
+    expect(assessReadiness({ day: DAY, checkIn: fine, logs: [log({ duration: 'short', intensity: 'hard' })], sessions: [], settings, planned: plan }).color).toBe('green');
+    expect(assessReadiness({ day: DAY, checkIn: fine, logs: [log({ duration: 'medium', intensity: 'hard' })], sessions: [], settings, planned: plan }).color).toBe('yellow');
+    expect(assessReadiness({ day: DAY, checkIn: fine, logs: [log({ duration: 'long', intensity: 'medium' })], sessions: [], settings, planned: plan }).color).toBe('yellow');
+    expect(assessReadiness({ day: DAY, checkIn: fine, logs: [log({ duration: 'long', intensity: 'hard' })], sessions: [], settings, planned: plan }).color).toBe('orange');
+  });
+
+  it('messing around plus a real practice is not "two sports"; two real hours are', () => {
+    const plan = { kind: 'strength' as const, templateId: 'strength-a', name: 'Strength A' };
+    const mixed = assessReadiness({ day: DAY, checkIn: fine, logs: [log({ sport: 'basketball', duration: 'medium', intensity: 'messing' }), log({ sport: 'baseball', duration: 'medium', intensity: 'medium' })], sessions: [], settings, planned: plan });
+    expect(mixed.color).toBe('green');
+    expect(mixed.offer?.templateId).toBe('strength-a');
+    const two = assessReadiness({ day: DAY, checkIn: fine, logs: [log({ sport: 'pe', duration: 'medium', intensity: 'medium' }), log({ sport: 'baseball', duration: 'medium', intensity: 'medium' })], sessions: [], settings, planned: plan });
+    expect(two.color).toBe('orange');
+  });
+
+  it('old logs without the new effort level still score as before', () => {
+    const l = { ...log({ duration: 'medium' }), intensity: 'medium' as const };
+    expect(logLoad(l)).toBe(4);
   });
 
   it('acceptance 4: heavy throwing suppresses demanding arm work today and tomorrow', () => {
