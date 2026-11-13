@@ -90,7 +90,18 @@ const shot = (page, name) => page.screenshot({ path: path.join(shotsDir, `${name
   await page.waitForSelector('text=You answered today');
   await settle();
   t = await body();
-  expect('yellow day after an hour of all-out practice (the shoot-around did not count toward it)', /A short gentle workout today/.test(t), true);
+  expect('2026-11-12: one hard sport day is still a real workout', /Hard day, and still a real workout/.test(t) && /One hard day does not change your workout/.test(t), true);
+  expect('one hard day still offers the strength workout', /Today: Strength A/.test(t), true);
+  await shot(page, '02a_hard_day_real_workout');
+  // How he feels still makes a gentle day: a little sore.
+  await page.click('role=button[name="Change my answers"]');
+  await page.waitForSelector('text=How are you today, Eli?');
+  await page.click('role=button[name="A little"]');
+  await page.click('role=button[name="Save my answers"]');
+  await page.waitForSelector('text=You answered today');
+  await settle();
+  t = await body();
+  expect('a little sore makes the short gentle workout', /A short gentle workout today/.test(t), true);
   expect('arm blocked after pitching', /no extra arm or shoulder work/.test(t), true);
   expect('creatine and multivitamin attested on the check-in', /Creatine yes · Multivitamin yes/.test(t), true);
   expect('daily message shown', /Recovery|Hydration|Food|Sleep|Consistency|Confidence|Mobility|Challenge/.test(t), true);
@@ -177,7 +188,7 @@ const shot = (page, name) => page.screenshot({ path: path.join(shotsDir, `${name
   expect('shortstop session opened on a yellow day', /Shortstop Movement · 1 of/.test(t), true);
   const ssCount = await page.locator('.progress-dots i').count();
   expect('yellow day drops the bound, the hop and the sprint starts (15 items become 9)', ssCount, 9);
-  expect('one set each on a yellow day', /Gentle today: each move just once/.test(t), true);
+  expect('one set each on a yellow day', /Shorter today: each move just once/.test(t), true);
   // The workout player offers a Watch button on moves that have a demo (warm-ups do not); the sheet loads the embed only on tap.
   for (let k = 0; k < 6 && (await page.locator('role=button[name="▶ Watch it"]').count()) === 0; k++) { await page.click('text=/Next ›|Skip this one ›/'); await settle(); }
   expect('player has a Watch it button on a move with a demo', await page.locator('role=button[name="▶ Watch it"]').count(), 1);

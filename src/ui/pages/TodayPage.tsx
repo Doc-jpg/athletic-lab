@@ -198,7 +198,7 @@ export function TodayPage() {
       {whyOpen && readiness && (
         <Sheet title="Why this day" onClose={() => setWhyOpen(false)}>
           <ul className="why">{[...readiness.reasons, ...readiness.blockedWhy].map((r, i) => <li key={i}>{r}</li>)}</ul>
-          <p className="small muted mt">Sport load today {readiness.loadToday}, yesterday {readiness.loadYesterday} (each activity scores 1 to 9 from how long and how hard).</p>
+          <p className="small muted mt">Hard sport days in a row, counting today: {readiness.hardStreak}. A hard sport day is an hour or more of all-out playing, a long game, or a tournament (a tournament counts as two). One: the real workout. Two: a shorter one. Three or more: the gentle one.</p>
         </Sheet>
       )}
       {toast.el}

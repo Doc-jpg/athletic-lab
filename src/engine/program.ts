@@ -109,7 +109,7 @@ export function decideDose(exercise: Exercise, templateDose: Dose, ctx: BuildCon
   const hist = historyFor(exercise.id, ctx.sessions, ctx.day);
   const last = hist[0];
   let dose: Dose = { ...templateDose };
-  if (reduced) return { dose: { ...dose, sets: 1 }, reason: 'Gentle today: each move just once, nice and slow.' };
+  if (reduced) return { dose: { ...dose, sets: 1 }, reason: 'Shorter today: each move just once.' };
   if (last) dose = { ...dose, sets: last.item.planned.sets, reps: last.item.planned.reps ?? dose.reps, seconds: last.item.planned.seconds ?? dose.seconds };
   const cap = exercise.maxDose ?? { sets: 3, reps: 15, seconds: 60 };
   // Safety first: never above the cap, never below the template.
@@ -202,12 +202,12 @@ export function buildSession(template: WorkoutTemplate, readiness: Readiness, ct
     const tag = blockedBy(ex, readiness.blocked);
     if (needsCheck || tag) {
       const sub = pickSubstitute(ex, ctx, readiness.blocked, true);
-      const why = needsCheck ? `${ex.name} waits until a parent has watched you do it` : `${ex.name} works the ${tag === 'arm' || tag === 'shoulder' ? 'arm' : 'legs'}, which rest today`;
+      const why = needsCheck ? `${ex.name} waits until a parent has watched you do it` : (tag === 'jump' || tag === 'sprint') ? `${ex.name} is jumping or sprinting, and you did plenty of that today` : `${ex.name} works the ${tag === 'arm' || tag === 'shoulder' ? 'arm' : 'legs'}, which rest today`;
       if (sub) { changes.push(`${why}, so you get ${sub.name} instead.`); swappedFrom = ex; ex = sub; }
       else if (ti.optional) { changes.push(`${why}, so it is out today.`); continue; }
       else { changes.push(`${why}, so it is out today.`); continue; }
     }
-    if (reduced && (ex.loadTags.includes('jump') || ex.loadTags.includes('sprint'))) { changes.push(`${ex.name} is out today because today is a gentle day.`); continue; }
+    if (reduced && (ex.loadTags.includes('jump') || ex.loadTags.includes('sprint'))) { changes.push(`${ex.name} is out today because today is a shorter day.`); continue; }
     const base = swappedFrom ? ex.defaultDose : ti.dose;
     const decision = decideDose(ex, base, ctx, phase, reduced);
     items.push({

@@ -127,9 +127,12 @@ describe('session building from a template', () => {
     for (const id of ids) expect(exercises.get(id)!.loadTags.some((t) => t === 'arm' || t === 'shoulder')).toBe(false);
   });
 
-  it('acceptance 3 in a session: hard basketball day gives recovery, and even a forced coordination session has no legs/jump/sprint items', () => {
-    const r = assessReadiness({ day: DAY, checkIn: fine, logs: [{ id: 'l', day: DAY, ts: '', sport: 'basketball', duration: 'long', intensity: 'hard', by: 'athlete' }], sessions: [], settings });
-    expect(r.offer?.kind).toBe('recovery');
+  it('acceptance 3 in a session: a hard basketball day with lots of running still gives strength, the leg moves are swapped out, and a forced coordination session has no legs/jump/sprint items', () => {
+    const r = assessReadiness({ day: DAY, checkIn: fine, logs: [{ id: 'l', day: DAY, ts: '', sport: 'basketball', duration: 'long', intensity: 'hard', heavyRunning: true, by: 'athlete' }], sessions: [], settings });
+    expect(r.offer).toMatchObject({ kind: 'strength', reduced: false });
+    const built = buildSession(TEMPLATE_BY_ID['strength-a'], r, { ...base, statuses: new Map() });
+    expect(built.session.items.length).toBeGreaterThanOrEqual(6);
+    for (const it of built.session.items) expect(exercises.get(it.exerciseId)!.loadTags.some((t) => t === 'legs' || t === 'jump' || t === 'sprint')).toBe(false);
     const { session } = buildSession(TEMPLATE_BY_ID['coordination'], r, { ...base, statuses: new Map() });
     for (const it of session.items) expect(exercises.get(it.exerciseId)!.loadTags.some((t) => t === 'legs' || t === 'jump' || t === 'sprint')).toBe(false);
   });

@@ -18,11 +18,12 @@ describe('readiness engine', () => {
     expect(r.reasons.length).toBeGreaterThan(0);
   });
 
-  it('acceptance 3: heavy basketball suppresses intense leg work (legs, jump, sprint blocked) and turns the day orange', () => {
-    const r = assessReadiness({ day: DAY, checkIn: fine, logs: [log({ sport: 'basketball', duration: 'long', intensity: 'hard', heavyRunning: true })], sessions: [], settings });
+  it('acceptance 3: hard basketball with lots of running blocks legs, jumps and sprints, but one hard day is still a real workout', () => {
+    const r = assessReadiness({ day: DAY, checkIn: fine, logs: [log({ sport: 'basketball', duration: 'long', intensity: 'hard', heavyRunning: true })], sessions: [], settings, planned: { kind: 'strength', templateId: 'strength-a', name: 'Strength A' } });
     expect(r.blocked).toEqual(expect.arrayContaining(['legs', 'jump', 'sprint']));
-    expect(r.color).toBe('orange');
-    expect(r.offer?.kind).toBe('recovery');
+    expect(r.color).toBe('green');
+    expect(r.offer).toMatchObject({ templateId: 'strength-a', reduced: false });
+    expect(r.headline).toBe('Hard day, and still a real workout');
   });
 
   it('acceptance 3b: an hour of real basketball with lots of jumping blocks legs but keeps the day green (he still lifts, minus the leg work)', () => {
@@ -45,24 +46,67 @@ describe('readiness engine', () => {
     expect(r.reasons.join(' ')).toMatch(/Messing around .* not a workout/);
   });
 
-  it('only an hour or more of hard playing changes the day: real hour green, all-out hour yellow, long all-out orange', () => {
+  it('2026-11-12: hard days in a row decide the workout. First hard day full, second shorter, third gentle', () => {
     const plan = { kind: 'strength' as const, templateId: 'strength-a', name: 'Strength A' };
+    const hard = (ago: number) => log({ day: addDays(DAY, -ago), sport: 'basketball', duration: 'long', intensity: 'hard' });
     const hourReal = assessReadiness({ day: DAY, checkIn: fine, logs: [log({ sport: 'baseball', duration: 'medium', intensity: 'medium' })], sessions: [], settings, planned: plan });
-    expect(hourReal.color).toBe('green');
-    expect(hourReal.reasons.join(' ')).toMatch(/not big enough to change your workout/);
-    expect(assessReadiness({ day: DAY, checkIn: fine, logs: [log({ duration: 'short', intensity: 'hard' })], sessions: [], settings, planned: plan }).color).toBe('green');
-    expect(assessReadiness({ day: DAY, checkIn: fine, logs: [log({ duration: 'medium', intensity: 'hard' })], sessions: [], settings, planned: plan }).color).toBe('yellow');
-    expect(assessReadiness({ day: DAY, checkIn: fine, logs: [log({ duration: 'long', intensity: 'medium' })], sessions: [], settings, planned: plan }).color).toBe('yellow');
-    expect(assessReadiness({ day: DAY, checkIn: fine, logs: [log({ duration: 'long', intensity: 'hard' })], sessions: [], settings, planned: plan }).color).toBe('orange');
+    expect(hourReal.hardStreak).toBe(0);
+    expect(hourReal.reasons.join(' ')).toMatch(/not a hard sport day/);
+    // Day 1 of tryouts: a long all-out one. Still the full strength workout, jumps and sprints out, leg strength in.
+    const d1 = assessReadiness({ day: DAY, checkIn: fine, logs: [hard(0)], sessions: [], settings, planned: plan });
+    expect(d1.hardStreak).toBe(1);
+    expect(d1.color).toBe('green');
+    expect(d1.offer).toMatchObject({ templateId: 'strength-a', reduced: false });
+    expect(d1.blocked).toEqual(expect.arrayContaining(['jump', 'sprint']));
+    expect(d1.blocked).not.toContain('legs');
+    expect(d1.reasons.join(' ')).toMatch(/One hard day does not change your workout/);
+    // Day 2 in a row: the strength workout, each move once.
+    const d2 = assessReadiness({ day: DAY, checkIn: fine, logs: [hard(0), hard(1)], sessions: [], settings, planned: plan });
+    expect(d2.hardStreak).toBe(2);
+    expect(d2.color).toBe('yellow');
+    expect(d2.offer).toMatchObject({ templateId: 'strength-a', reduced: true });
+    expect(d2.headline).toBe('A shorter workout today');
+    // Day 3 and after: the Short gentle workout. Never the stretch from sport alone.
+    for (const n of [3, 5]) {
+      const r = assessReadiness({ day: DAY, checkIn: fine, logs: Array.from({ length: n }, (_, i) => hard(i)), sessions: [], settings, planned: plan });
+      expect(r.hardStreak).toBe(n);
+      expect(r.offer.templateId).toBe('light');
+      expect(r.color).toBe('yellow');
+    }
+    // A day off in the middle resets the count.
+    const reset = assessReadiness({ day: DAY, checkIn: fine, logs: [hard(0), hard(2), hard(3)], sessions: [], settings, planned: plan });
+    expect(reset.hardStreak).toBe(1);
+    expect(reset.offer).toMatchObject({ templateId: 'strength-a', reduced: false });
+    // Hard yesterday and the day before, nothing hard today: a normal day.
+    const after = assessReadiness({ day: DAY, checkIn: fine, logs: [hard(1), hard(2)], sessions: [], settings, planned: plan });
+    expect(after.hardStreak).toBe(0);
+    expect(after.offer).toMatchObject({ templateId: 'strength-a', reduced: false });
   });
 
-  it('messing around plus a real practice is not "two sports"; two real hours are', () => {
+  it('second hard day with strength done yesterday: two days between strength still holds, so the gentle workout', () => {
+    const plan = { kind: 'strength' as const, templateId: 'strength-b', name: 'Strength B' };
+    const hard = (ago: number) => log({ day: addDays(DAY, -ago), sport: 'basketball', duration: 'long', intensity: 'hard' });
+    const r = assessReadiness({ day: DAY, checkIn: fine, logs: [hard(0), hard(1)], sessions: [strengthDone(addDays(DAY, -1))], settings, planned: plan });
+    expect(r.offer.templateId).toBe('light');
+    expect(r.reasons.join(' ')).toMatch(/two days between/);
+  });
+
+  it('how he feels still wins: worn out or very sore on a hard day is the stretch; a little sore is gentle', () => {
+    const hard = log({ sport: 'basketball', duration: 'long', intensity: 'hard' });
+    expect(assessReadiness({ day: DAY, checkIn: { ...fine, energy: 1 }, logs: [hard], sessions: [], settings }).offer.kind).toBe('recovery');
+    expect(assessReadiness({ day: DAY, checkIn: { ...fine, soreness: 'alot' }, logs: [hard], sessions: [], settings }).offer.kind).toBe('recovery');
+    expect(assessReadiness({ day: DAY, checkIn: { ...fine, soreness: 'some' }, logs: [hard], sessions: [], settings }).offer.templateId).toBe('light');
+  });
+
+  it('two activities in one day make one hard day, not a stretch day', () => {
     const plan = { kind: 'strength' as const, templateId: 'strength-a', name: 'Strength A' };
     const mixed = assessReadiness({ day: DAY, checkIn: fine, logs: [log({ sport: 'basketball', duration: 'medium', intensity: 'messing' }), log({ sport: 'baseball', duration: 'medium', intensity: 'medium' })], sessions: [], settings, planned: plan });
-    expect(mixed.color).toBe('green');
+    expect(mixed.hardStreak).toBe(0);
     expect(mixed.offer?.templateId).toBe('strength-a');
     const two = assessReadiness({ day: DAY, checkIn: fine, logs: [log({ sport: 'pe', duration: 'medium', intensity: 'medium' }), log({ sport: 'baseball', duration: 'medium', intensity: 'medium' })], sessions: [], settings, planned: plan });
-    expect(two.color).toBe('orange');
+    expect(two.hardStreak).toBe(1);
+    expect(two.color).toBe('green');
+    expect(two.offer).toMatchObject({ templateId: 'strength-a', reduced: false });
   });
 
   it('old logs without the new effort level still score as before', () => {
@@ -91,14 +135,17 @@ describe('readiness engine', () => {
     expect(r2.blocked).not.toContain('arm');
   });
 
-  it('acceptance 5: an exhausting tournament offers recovery, not a workout, and flags the parent', () => {
+  it('acceptance 5: a tournament counts as two hard days: a shorter strength workout with the legs left alone, and the parent is told', () => {
     const r = assessReadiness({ day: DAY, checkIn: fine, logs: [log({ tournament: true })], sessions: [], settings });
-    expect(r.color).toBe('orange');
-    expect(r.offer?.kind).toBe('recovery');
-    expect(r.foundations).toBe('optional');
+    expect(r.hardStreak).toBe(2);
+    expect(r.color).toBe('yellow');
+    expect(r.offer).toMatchObject({ kind: 'strength', reduced: true });
+    expect(r.blocked).toEqual(expect.arrayContaining(['legs', 'jump', 'sprint']));
     expect(r.alerts.some((a) => /Tournament/.test(a))).toBe(true);
+    const day2 = assessReadiness({ day: addDays(DAY, 1), checkIn: fine, logs: [log({ tournament: true }), log({ day: addDays(DAY, 1), tournament: true })], sessions: [], settings });
+    expect(day2.offer.templateId).toBe('light');
     const next = assessReadiness({ day: addDays(DAY, 1), checkIn: fine, logs: [log({ tournament: true })], sessions: [], settings });
-    expect(next.color).toBe('yellow');
+    expect(next.color).toBe('green');
     expect(next.blocked).toContain('legs');
   });
 
@@ -143,25 +190,33 @@ describe('readiness engine', () => {
     expect(r2.color).toBe('orange');
   });
 
-  it('a heavy day yesterday keeps today lighter', () => {
+  it('a hard day yesterday does not change a normal today', () => {
     const r = assessReadiness({ day: DAY, checkIn: fine, logs: [log({ day: addDays(DAY, -1), sport: 'basketball', duration: 'long', intensity: 'hard' })], sessions: [], settings });
-    expect(r.color).toBe('yellow');
+    expect(r.color).toBe('green');
   });
 
-  it('six active days in a row asks for a rest day and tells the parent', () => {
-    const logs = Array.from({ length: 6 }, (_, i) => log({ day: addDays(DAY, -(i + 1)), duration: 'short', intensity: 'easy' }));
-    const r = assessReadiness({ day: DAY, checkIn: fine, logs, sessions: [], settings });
-    expect(r.color).toBe('yellow');
-    expect(r.alerts.some((a) => /rest day/.test(a))).toBe(true);
+  it('six easy active days in a row change nothing (something every day is the plan); six hard ones tell the parent', () => {
+    const easy = Array.from({ length: 6 }, (_, i) => log({ day: addDays(DAY, -(i + 1)), duration: 'short', intensity: 'easy' }));
+    const r = assessReadiness({ day: DAY, checkIn: fine, logs: easy, sessions: [], settings });
+    expect(r.color).toBe('green');
+    expect(r.alerts).toEqual([]);
+    const hardOnes = Array.from({ length: 6 }, (_, i) => log({ day: addDays(DAY, -i), duration: 'long', intensity: 'hard' }));
+    const h = assessReadiness({ day: DAY, checkIn: fine, logs: hardOnes, sessions: [], settings });
+    expect(h.offer.templateId).toBe('light');
+    expect(h.alerts.some((a) => /6 hard sport days in a row/.test(a))).toBe(true);
   });
 
-  it('cumulative load brake: a week far above the month average forces recovery', () => {
+  it('a week far above the month average tells the parent but does not change the day, and needs three weeks of history', () => {
     const logs: SportsLog[] = [];
     for (let i = 7; i < 28; i++) if (i % 3 === 0) logs.push(log({ day: addDays(DAY, -i), duration: 'short', intensity: 'easy' }));
     for (let i = 1; i <= 6; i++) logs.push(log({ day: addDays(DAY, -i), duration: 'medium', intensity: 'medium' }));
     const r = assessReadiness({ day: DAY, checkIn: fine, logs, sessions: [], settings });
-    expect(['orange', 'yellow']).toContain(r.color);
-    expect(r.reasons.join(' ')).toMatch(/busier/);
+    expect(r.color).toBe('green');
+    expect(r.alerts.some((a) => /four-week average/.test(a))).toBe(true);
+    // A brand-new app: the only history is this week. No alert, no change.
+    const fresh = assessReadiness({ day: DAY, checkIn: fine, logs: logs.filter((l) => l.day >= addDays(DAY, -6)), sessions: [], settings });
+    expect(fresh.color).toBe('green');
+    expect(fresh.alerts).toEqual([]);
   });
 
   it('load scores are bounded and tournaments are the top', () => {

@@ -54,7 +54,7 @@ export function SportCard({ draft, onChange, onRemove }: { draft: SportDraft; on
       {!draft.intensity && <div className="small mt" style={{ color: 'var(--orange)' }}>Pick one of the four before you save. It decides whether today changes.</div>}
       <div className="small muted mt">How long was it?</div>
       <div className="chips">{(['short', 'medium', 'long'] as Duration[]).map((d) => <button key={d} className={`chip sm ${draft.duration === d ? 'on' : ''}`} onClick={() => set({ duration: d })}>{DURATION_WORDS[d]}</button>)}</div>
-      {draft.intensity === 'messing' && <p className="small muted mt">Messing around does not change your workout, even for a long time. Only hard playing for an hour or more does.</p>}
+      {draft.intensity === 'messing' && <p className="small muted mt">Messing around does not change your workout, even for a long time.</p>}
       <div className="small muted mt">Was it a big one? (tap if yes)</div>
       <div className="chips">
         {draft.sport === 'baseball' && <button className={`chip sm ${draft.heavyThrowing ? 'on' : ''}`} onClick={() => set({ heavyThrowing: !draft.heavyThrowing })}>Lots of throwing</button>}

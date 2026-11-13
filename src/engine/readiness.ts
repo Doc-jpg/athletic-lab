@@ -8,11 +8,19 @@
  * Hard rules never relax (same lesson as Dugout Lab's generator):
  *   RED    pain, illness, dizziness or other significant symptoms: no training, tell a parent. The Just breathing (two
  *          minutes of breathing) is still offered, because there is always something and it keeps the habit.
- *   ORANGE a huge sports day (a long all-out game, an all-day tournament, two real activities that add up):
- *          the five-minute stretch is the whole workout.
- *   YELLOW a big sports day (an hour or more of hard playing), or poor sleep/energy, or a strength session
- *          inside 48 hours: reduced volume, no loading.
- *   GREEN  fresh and recovered: the planned session. An hour of a real game is still green: he came here to lift.
+ *   ORANGE worn out (no energy, very sore): the five-minute stretch is the whole workout.
+ *   YELLOW hard sport days piling up, or poor sleep, low energy or some soreness: a shorter or gentler workout.
+ *   GREEN  the planned session.
+ * Hard days in a row (2026-11-12 change; Deren, after a week of basketball tryouts gave Eli a five-minute stretch
+ * every day: "if today was hard, but nothing was yesterday, then you still do workout, but if today was hard,
+ * yesterday was hard, maybe you do a medium workout, and if today is the third day in a row... something light").
+ * One day is never judged alone. A hard sport day is a day with load 6 or more (an hour or more of hard playing,
+ * a long game, a tournament). The engine counts hard days in a row ending today:
+ *   1st hard day   the full planned workout (jumps and sprints come out after hard basketball or running).
+ *   2nd in a row   the planned strength workout, each move once ("a shorter workout").
+ *   3rd or more    the Short gentle workout.
+ * An all-day tournament counts as two hard days.
+ * Sport load alone never sends him to the stretch any more. How he feels still can: that is the safety valve.
  * Sport load (2026-11-08 change, after a driveway shoot-around turned a lifting day into a stretch): the effort
  * question asks what it looked like, not how it felt. "Messing around" (shooting around, playing catch) scores 0,
  * however long it went on, because time is not exertion. Only hard playing for an hour or more changes the day.
@@ -47,6 +55,8 @@ export interface Readiness {
   foundations: 'yes' | 'optional' | 'no';
   loadToday: number;
   loadYesterday: number;
+  /** Hard sport days in a row ending today (0 when today was not a hard day). */
+  hardStreak: number;
   /** Things the parent should see (a flag is created for these). */
   alerts: string[];
 }
@@ -54,10 +64,8 @@ export interface Readiness {
 const DUR = { short: 1, medium: 2, long: 3 } as const;
 const INT = { messing: 0, easy: 1, medium: 2, hard: 3 } as const;
 
-/** A day that changes the workout: an hour or more of hard playing (6), or a long real game (6). */
+/** A hard sport day: an hour or more of all-out playing, a long real game, or a tournament. Hard days in a row change the workout. */
 export const BIG_DAY = 6;
-/** A day that is the workout: a long all-out game or a tournament (9). */
-export const HUGE_DAY = 9;
 
 /**
  * One log's load score, 0 to 9. Tournaments count as the top of the range. Messing around is 0 for anything under
@@ -70,18 +78,32 @@ export function logLoad(l: SportsLog): number {
   return DUR[l.duration] * (INT[l.intensity] ?? 2);
 }
 
-/** Logs that were real exercise, not messing around. */
-function realLogs(logs: SportsLog[]): SportsLog[] {
-  return logs.filter((l) => logLoad(l) >= 2);
-}
-
 export function dayLoad(logs: SportsLog[], day: Day): number {
   return logs.filter((l) => l.day === day).reduce((s, l) => s + logLoad(l), 0);
 }
 
+/** Legs get no extra hard work: he said there was lots of running or jumping, or it was a tournament. */
 function isHeavyLegs(l: SportsLog): boolean {
-  const score = logLoad(l);
-  return !!l.heavyRunning || !!l.tournament || ((l.sport === 'basketball' || l.sport === 'running' || l.sport === 'soccer' || l.sport === 'football') && score >= BIG_DAY);
+  return !!l.heavyRunning || !!l.tournament;
+}
+
+/** A hard running sport: he has sprinted and jumped plenty, so those come out, but leg strength work stays. */
+function isHardRunningSport(l: SportsLog): boolean {
+  return (l.sport === 'basketball' || l.sport === 'running' || l.sport === 'soccer' || l.sport === 'football') && logLoad(l) >= BIG_DAY;
+}
+
+/**
+ * Hard sport days in a row ending on this day. 0 when this day itself was not hard.
+ * An all-day tournament counts as two, so the first tournament day is already a shorter workout.
+ */
+export function hardStreak(logs: SportsLog[], day: Day): number {
+  let n = 0;
+  let d = day;
+  for (let i = 0; i < 14 && dayLoad(logs, d) >= BIG_DAY; i++) {
+    n += logs.some((l) => l.day === d && l.tournament) ? 2 : 1;
+    d = addDays(d, -1);
+  }
+  return n;
 }
 
 function isHeavyArm(l: SportsLog): boolean {
@@ -107,11 +129,15 @@ export function assessReadiness(input: ReadinessInput): Readiness {
       blocked.add('shoulder');
       blockedWhy.push(l.pitched ? 'You pitched today, so no extra arm or shoulder work.' : 'You threw a lot today, so no extra arm or shoulder work.');
     }
-    if (isHeavyLegs(l)) {
+    if (isHeavyLegs(l) && !blocked.has('legs')) {
       blocked.add('legs');
       blocked.add('jump');
       blocked.add('sprint');
-      blockedWhy.push(l.tournament ? 'Tournament day: no extra leg work, sprints or jumps.' : `Hard ${l.sport === 'basketball' ? 'basketball' : 'running'} today, so no extra sprints, jumps or hard leg work.`);
+      blockedWhy.push(l.tournament ? 'Tournament day: no extra leg work, sprints or jumps.' : 'Lots of running or jumping today, so no extra sprints, jumps or hard leg work.');
+    } else if (isHardRunningSport(l) && !blocked.has('jump')) {
+      blocked.add('jump');
+      blocked.add('sprint');
+      blockedWhy.push(`Hard ${l.sport === 'basketball' ? 'basketball' : l.sport === 'running' ? 'running' : l.sport} today, so no extra sprints or jumps. Strength moves are still in.`);
     }
   }
   for (const l of yLogs) {
@@ -140,11 +166,15 @@ export function assessReadiness(input: ReadinessInput): Readiness {
       blockedWhy.push(`${n} pitches ${ago === 1 ? 'yesterday' : ago + ' days ago'} means ${rest} rest day${rest === 1 ? '' : 's'} for the arm (Pitch Smart).`);
     }
   }
-  // Cumulative load brake (slow-down only): this week's sport load against the four-week average.
+  // This week's sport load against the four-week average. It only tells the parent; it never changes the day
+  // (hard days in a row do that). It needs three weeks of history first: in a new app the week IS the month,
+  // and the ratio read 4.0 for a kid who had simply started logging.
   const week = sumLoad(logs, addDays(day, -6), day);
   const month = sumLoad(logs, addDays(day, -27), day);
   const weeklyAvg = month / 4;
-  const ratio = weeklyAvg > 0 && month >= 12 ? week / weeklyAvg : 0;
+  const hasHistory = logs.some((l) => l.day <= addDays(day, -21));
+  const ratio = hasHistory && weeklyAvg > 0 && month >= 12 ? week / weeklyAvg : 0;
+  const streak = hardStreak(logs, day);
 
   // RED: symptoms. Nothing else matters.
   if (checkIn && (checkIn.pain || checkIn.sick || checkIn.dizzy)) {
@@ -161,6 +191,7 @@ export function assessReadiness(input: ReadinessInput): Readiness {
       foundations: 'no',
       loadToday,
       loadYesterday,
+      hardStreak: streak,
       alerts
     };
   }
@@ -172,49 +203,56 @@ export function assessReadiness(input: ReadinessInput): Readiness {
   const hoursSinceStrength = lastStrength ? daysBetween(lastStrength.day, day) * 24 : Infinity;
   const weekStart = addDays(day, -6);
   const strengthThisWeek = done.filter((s) => DEMANDING_KINDS.includes(s.kind) && s.day >= weekStart && s.day < day).length;
-  const activeDays = new Set<Day>();
-  for (let i = 1; i <= 6; i++) {
-    const d = addDays(day, -i);
-    if (done.some((s) => s.day === d && s.kind !== 'foundations' && s.kind !== 'recovery') || logs.some((l) => l.day === d)) activeDays.add(d);
-  }
-  const noRestDay = activeDays.size >= 6;
 
-  // Score the day.
+  // Score the day. Sport load never makes an orange day; only how he feels does.
   let color: ReadinessColor = 'green';
-  const tournament = todayLogs.some((l) => l.tournament);
-  const twoSports = realLogs(todayLogs).length >= 2 && loadToday >= HUGE_DAY - 1;
-  if (tournament) { color = 'orange'; reasons.push('Tournament day. That was your workout. A five-minute stretch is all that is left.'); alerts.push('Tournament day logged.'); }
-  else if (loadToday >= HUGE_DAY) { color = 'orange'; reasons.push('You already did a lot of sport today (a long one, going all out). That was your workout. You do not need anything extra.'); }
-  else if (twoSports) { color = 'orange'; reasons.push('Two real activities today add up to a huge day. That was your workout.'); }
-  else if (checkIn?.energy === 1) { color = 'orange'; reasons.push('You have no energy today. Five easy minutes and then rest is the smart choice.'); }
+  /** medium = the planned strength workout, each move once. light = the Short gentle workout. */
+  let level: 'full' | 'medium' | 'light' = 'full';
+  if (todayLogs.some((l) => l.tournament)) alerts.push('Tournament day logged.');
+  if (ratio >= 1.5) alerts.push('Sports load this week is more than 1.5 times the four-week average.');
+  if (streak >= 6) alerts.push(`${streak} hard sport days in a row with no easier day.`);
+  if (checkIn?.energy === 1) { color = 'orange'; reasons.push('You have no energy today. Five easy minutes and then rest is the smart choice.'); }
   else if (checkIn?.soreness === 'alot') { color = 'orange'; reasons.push('You are very sore. Sore muscles need a stretch and a good sleep, not more work.'); }
-  else if (ratio >= 1.5) { color = 'orange'; reasons.push('This week has been a lot busier than usual. A stretch today keeps the rest of the week good.'); alerts.push('Sports load this week is more than 1.5 times the four-week average.'); }
   else {
-    if (ratio >= 1.3) { color = 'yellow'; reasons.push('This week has been busier than usual, so today is lighter.'); }
-    if (loadToday >= BIG_DAY) { color = 'yellow'; reasons.push('You already had a big sport day today (an hour or more of hard playing), so today is a lighter workout.'); }
-    if (loadYesterday >= HUGE_DAY && color === 'green') { color = 'yellow'; reasons.push('Yesterday was a huge day (a long all-out game or a tournament), so today stays lighter.'); }
-    if (checkIn?.energy === 2) { color = 'yellow'; reasons.push('Your energy is low today.'); }
-    if (checkIn && checkIn.sleep <= 2) { color = 'yellow'; reasons.push('You did not sleep well, so today is lighter. Tonight, get a good sleep.'); }
-    if (checkIn?.soreness === 'some') { color = 'yellow'; reasons.push('You are a little sore, so today is easier.'); }
-    if (noRestDay) { color = 'yellow'; reasons.push('Six busy days in a row. A real rest day this week is part of the plan.'); alerts.push('No rest day in the last six days.'); }
+    if (streak === 1) reasons.push('Today was a hard sport day, but yesterday was not. One hard day does not change your workout. You still do the real one.');
+    const tourneyToday = todayLogs.some((l) => l.tournament);
+    if (streak === 2) { color = 'yellow'; level = 'medium'; reasons.push(tourneyToday ? 'A tournament day counts as two hard days. So today is a shorter workout: each move just once.' : 'Two hard sport days in a row (yesterday and today). So today is a shorter workout: each move just once.'); }
+    if (streak >= 3) { color = 'yellow'; level = 'light'; reasons.push(tourneyToday ? 'A tournament day on top of another hard day. So today is the Short gentle workout.' : `${streak} hard sport days in a row. So today is the Short gentle workout.`); }
+    if (checkIn?.energy === 2) { color = 'yellow'; level = 'light'; reasons.push('Your energy is low today.'); }
+    if (checkIn && checkIn.sleep <= 2) { color = 'yellow'; level = 'light'; reasons.push('You did not sleep well, so today is lighter. Tonight, get a good sleep.'); }
+    if (checkIn?.soreness === 'some') { color = 'yellow'; level = 'light'; reasons.push('You are a little sore, so today is easier.'); }
   }
-  if (color === 'green') {
+  if (color === 'green' && streak === 0) {
     if (todayLogs.length > 0 && loadToday < 2) reasons.push('Messing around (shooting around, playing catch) is not a workout, so today is still a normal day.');
-    else if (todayLogs.length > 0) reasons.push('What you did today was not big enough to change your workout. Only an hour or more of hard playing does that. Today is a normal day.');
-    else reasons.push('You feel fresh, slept okay, and nothing big happened today or yesterday.');
+    else if (todayLogs.length > 0) reasons.push('What you did today was not a hard sport day (that takes an hour or more of hard playing). Today is a normal day.');
+    else reasons.push('You feel fresh, slept okay, and you added no sport today.');
   }
 
   // What to offer.
+  const planned = input.planned ?? { kind: 'strength' as SessionKind, templateId: 'strength-a', name: 'Strength A' };
+  // The strength workout to use when the plan is all legs or all jumping: the one he did not do last.
+  const lastA = done.filter((x) => x.kind === 'strength').sort((a, b) => b.day.localeCompare(a.day))[0];
+  const otherStrength = lastA?.templateId === 'strength-a' ? { kind: 'strength' as SessionKind, templateId: 'strength-b', name: 'Strength B' } : { kind: 'strength' as SessionKind, templateId: 'strength-a', name: 'Strength A' };
+  const strengthAllowed = hoursSinceStrength >= 48 && strengthThisWeek < settings.strengthDaysPerWeek;
+  const LIGHT = { templateId: 'light', name: 'Short gentle workout', kind: 'light' as SessionKind, reduced: true };
   let offer: Readiness['offer'];
   let foundations: Readiness['foundations'] = 'yes';
   if (color === 'orange') {
     offer = { templateId: 'recovery', name: 'Five-minute stretch', kind: 'recovery', reduced: false };
     foundations = 'optional';
-  } else if (color === 'yellow') {
-    offer = { templateId: 'light', name: 'Short gentle workout', kind: 'light', reduced: true };
+  } else if (level === 'light') {
+    offer = LIGHT;
+  } else if (level === 'medium') {
+    // Second hard day in a row: a real strength workout, but each move once. If strength is too recent, the gentle one.
+    const pick = planned.kind === 'strength' ? planned : otherStrength;
+    if (strengthAllowed) offer = { templateId: pick.templateId, name: pick.name, kind: pick.kind, reduced: true };
+    else {
+      reasons.push(hoursSinceStrength < 48 ? 'You did a strength workout yesterday, and those get two days between them, so today is the Short gentle workout.' : `You already did ${strengthThisWeek} strength or Shortstop workouts this week (the plan is ${settings.strengthDaysPerWeek}), so today is the Short gentle workout.`);
+      offer = LIGHT;
+    }
   } else {
-    const planned = input.planned ?? { kind: 'strength', templateId: 'strength-a', name: 'Strength A' };
     const demanding = DEMANDING_KINDS.includes(planned.kind);
+    const noJumps = blocked.has('legs') || blocked.has('jump');
     if (demanding && hoursSinceStrength < 48) {
       reasons.push(`${lastStrength?.kind === 'movement' ? 'Shortstop Movement' : 'Strength'} was ${hoursSinceStrength === 0 ? 'today' : 'yesterday'}, and your legs get two days between big days, so today is Quick feet.`);
       offer = { templateId: 'coordination', name: 'Quick feet', kind: 'coordination', reduced: false };
@@ -224,15 +262,26 @@ export function assessReadiness(input: ReadinessInput): Readiness {
     } else {
       offer = { templateId: planned.templateId, name: planned.name, kind: planned.kind, reduced: false };
     }
-    // Blocks can take the planned session apart; coordination and Shortstop Movement are all legs.
-    if ((offer.kind === 'coordination' || offer.kind === 'movement') && blocked.has('legs')) {
-      reasons.push(`Your legs already worked hard today, so it is the Short gentle workout instead of ${offer.kind === 'movement' ? 'Shortstop Movement' : 'Quick feet'}.`);
-      offer = { templateId: 'light', name: 'Short gentle workout', kind: 'light', reduced: true };
+    // Quick feet and Shortstop Movement are all sprints and jumps. After a day full of those, a strength
+    // workout takes their place if strength is allowed today; if not, the gentle one.
+    if ((offer.kind === 'coordination' || offer.kind === 'movement') && noJumps) {
+      const was = offer.kind === 'movement' ? 'Shortstop Movement' : 'Quick feet';
+      if (strengthAllowed) {
+        reasons.push(`You already ran and jumped a lot today, so it is ${otherStrength.name} instead of ${was}.`);
+        offer = { templateId: otherStrength.templateId, name: otherStrength.name, kind: otherStrength.kind, reduced: false };
+      } else {
+        reasons.push(`You already ran and jumped a lot today, so it is the Short gentle workout instead of ${was}.`);
+        offer = LIGHT;
+      }
     }
   }
 
-  const headline = color === 'green' ? 'Fresh and ready' : color === 'yellow' ? 'A short gentle workout today' : 'Big day already: just the five-minute stretch';
-  return { color, headline, reasons, blocked: [...blocked], blockedWhy, offer, foundations, loadToday, loadYesterday, alerts };
+  const headline = color === 'orange' ? 'Worn out today: just the five-minute stretch'
+    : offer.templateId === 'light' ? 'A short gentle workout today'
+    : offer.reduced ? 'A shorter workout today'
+    : streak === 1 ? 'Hard day, and still a real workout'
+    : 'Fresh and ready';
+  return { color, headline, reasons, blocked: [...blocked], blockedWhy, offer, foundations, loadToday, loadYesterday, hardStreak: streak, alerts };
 }
 
 /** Pitch Smart rest days for ages 11 to 14. */

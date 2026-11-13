@@ -79,10 +79,11 @@ describe('Shortstop Movement: readiness, rotation, building and progression', ()
     expect(session.kind).toBe('movement');
   });
 
-  it('hard basketball day: the day is orange, and even a forced session has no bound, hop, sprint or leg items', () => {
+  it('hard basketball day with lots of running: Shortstop Movement gives way to a strength workout, and even a forced session has no bound, hop, sprint or leg items', () => {
     const r = assessReadiness({ day: DAY, checkIn: fine, logs: [log({ heavyRunning: true })], sessions: [], settings, planned: { kind: 'movement', templateId: 'shortstop', name: 'Shortstop Movement' } });
-    expect(r.color).toBe('orange');
-    expect(r.offer?.kind).toBe('recovery');
+    expect(r.color).toBe('green');
+    expect(r.offer).toMatchObject({ templateId: 'strength-a', reduced: false });
+    expect(r.reasons.join(' ')).toMatch(/Strength A instead of Shortstop Movement/);
     const { session } = buildSession(TEMPLATE_BY_ID['shortstop'], r, base);
     const ids = session.items.map((i) => i.exerciseId);
     expect(ids).not.toContain('ss-skater');
@@ -92,11 +93,11 @@ describe('Shortstop Movement: readiness, rotation, building and progression', ()
     expect(ids).toContain('ss-ninety');
   });
 
-  it('an hour of real basketball with lots of jumping: still a green day, but the legs are blocked, so Shortstop Movement becomes the Short gentle workout', () => {
+  it('an hour of real basketball with lots of jumping: still a green day, but the legs are blocked, so Shortstop Movement becomes a strength workout', () => {
     const r = assessReadiness({ day: DAY, checkIn: fine, logs: [log({ duration: 'medium', intensity: 'medium', heavyRunning: true })], sessions: [], settings, planned: { kind: 'movement', templateId: 'shortstop', name: 'Shortstop Movement' } });
     expect(r.color).toBe('green');
     expect(r.blocked).toContain('legs');
-    expect(r.offer?.templateId).toBe('light');
+    expect(r.offer?.templateId).toBe('strength-a');
   });
 
   it('yellow day (short sleep): one set each and the bound and hop are out', () => {
