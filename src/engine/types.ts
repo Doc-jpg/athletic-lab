@@ -140,7 +140,7 @@ export type Load = 'body' | 'db5' | 'db10';
 /** Which part of the body an exercise loads; the readiness engine blocks tags by the day's sport. */
 export type LoadTag = 'arm' | 'shoulder' | 'legs' | 'jump' | 'sprint' | 'rotation' | 'core' | 'spine';
 export type Equipment = 'none' | 'chair' | 'step' | 'wall' | 'dumbbell' | 'floor' | 'ball' | 'cone';
-export type Pose = 'squat' | 'chairsquat' | 'splitsquat' | 'stepup' | 'bridge' | 'calfraise' | 'wallpush' | 'inclinepush' | 'pushup' | 'row' | 'curl' | 'scap' | 'deadbug' | 'birddog' | 'sideplank' | 'plank' | 'curlup' | 'rotation' | 'antirotation' | 'balance' | 'heeltoe' | 'crossbody' | 'lateral' | 'reaction' | 'ankle' | 'hip' | 'thoracic' | 'hamstring' | 'shoulder' | 'breathe' | 'catcow' | 'march' | 'skip' | 'shuffle' | 'accel' | 'landing' | 'jog' | 'walk' | 'ready' | 'crossover' | 'dropstep' | 'hipturn' | 'latlunge' | 'hinge' | 'skater' | 'quickfeet' | 'ninety' | 'carioca';
+export type Pose = 'squat' | 'chairsquat' | 'splitsquat' | 'stepup' | 'bridge' | 'calfraise' | 'wallpush' | 'inclinepush' | 'pushup' | 'row' | 'curl' | 'scap' | 'deadbug' | 'birddog' | 'sideplank' | 'plank' | 'curlup' | 'rotation' | 'antirotation' | 'balance' | 'heeltoe' | 'crossbody' | 'lateral' | 'reaction' | 'ankle' | 'hip' | 'thoracic' | 'hamstring' | 'shoulder' | 'breathe' | 'catcow' | 'march' | 'skip' | 'shuffle' | 'accel' | 'landing' | 'jog' | 'walk' | 'ready' | 'crossover' | 'dropstep' | 'hipturn' | 'latlunge' | 'hinge' | 'skater' | 'quickfeet' | 'ninety' | 'carioca' | 'anklecircle' | 'calfstretch';
 
 export interface Dose {
   sets: number;

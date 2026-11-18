@@ -4,7 +4,7 @@
  */
 import type { WorkoutTemplate } from '../engine/types';
 
-export const TEMPLATES_VERSION = 3;
+export const TEMPLATES_VERSION = 4;
 const TS = '2026-11-02T00:00:00.000Z';
 
 const t = (x: Omit<WorkoutTemplate, 'source' | 'version' | 'createdAt' | 'updatedAt'>): WorkoutTemplate => ({ ...x, source: 'library', version: TEMPLATES_VERSION, createdAt: TS, updatedAt: TS });
@@ -78,16 +78,18 @@ export const LIBRARY_TEMPLATES: WorkoutTemplate[] = [
     id: 'coordination',
     name: 'Quick feet',
     kind: 'coordination',
-    minutes: 12,
-    summary: 'Skips, side shuffles, three-step sprint starts, a stop-and-go game and a few soft landings. 10 to 15 minutes on a fresh day. Rest fully between each one.',
+    minutes: 14,
+    summary: 'Skips, side shuffles, three-step sprint starts, a stop-and-go game and a few soft landings. You loosen your ankles first and stretch your calves at the end. About 15 minutes on a fresh day. Rest fully between each one.',
     items: [
       { exerciseId: 'wu-march', dose: { sets: 1, seconds: 45 } },
       { exerciseId: 'wu-legswing', dose: { sets: 1, reps: 10, perSide: true } },
+      { exerciseId: 'mob-ankle', dose: { sets: 1, reps: 8, perSide: true } },
       { exerciseId: 'ath-skipmarch', dose: { sets: 3, reps: 1 } },
       { exerciseId: 'ath-shuffle', dose: { sets: 3, reps: 1 } },
       { exerciseId: 'ath-accel', dose: { sets: 3, reps: 1 } },
       { exerciseId: 'ath-dirchange', dose: { sets: 3, seconds: 20 } },
       { exerciseId: 'ath-landing', dose: { sets: 2, reps: 4 }, optional: true, note: 'Only when legs feel fresh.' },
+      { exerciseId: 'mob-calf', dose: { sets: 1, seconds: 20, perSide: true } },
       { exerciseId: 'cd-walk', dose: { sets: 1, seconds: 60 } }
     ]
   }),
@@ -110,11 +112,14 @@ export const LIBRARY_TEMPLATES: WorkoutTemplate[] = [
     id: 'light',
     name: 'Short gentle workout',
     kind: 'light',
-    minutes: 10,
-    summary: 'Stretching, easy belly and back moves, and balance. For days when you already played a fair amount of sport, or you are a little tired.',
+    minutes: 12,
+    summary: 'Ankles and calves, stretching, easy belly and back moves, and balance. About 12 minutes. For days when you already played a fair amount of sport, or you are a little tired.',
     items: [
       { exerciseId: 'mob-breathe', dose: { sets: 1, reps: 6 } },
       { exerciseId: 'mob-catcow', dose: { sets: 1, reps: 6 } },
+      { exerciseId: 'mob-anklecircle', dose: { sets: 1, reps: 10, perSide: true } },
+      { exerciseId: 'mob-ankle', dose: { sets: 1, reps: 8, perSide: true } },
+      { exerciseId: 'mob-calf', dose: { sets: 1, seconds: 20, perSide: true } },
       { exerciseId: 'mob-thoracic', dose: { sets: 1, reps: 6, perSide: true } },
       { exerciseId: 'mob-hip', dose: { sets: 1, seconds: 20, perSide: true } },
       { exerciseId: 'core-deadbug', dose: { sets: 1, reps: 6, perSide: true } },
@@ -128,12 +133,12 @@ export const LIBRARY_TEMPLATES: WorkoutTemplate[] = [
     name: 'Five-minute stretch',
     kind: 'recovery',
     minutes: 5,
-    summary: 'After a big day of sport, this is the whole workout: breathing, cat and cow, the backs of the legs, calves, shoulders. Five minutes, then you are done.',
+    summary: 'When you are worn out or very sore, this is the whole workout: breathing, ankles, calves, the backs of the legs, shoulders. Five minutes, then you are done.',
     items: [
-      { exerciseId: 'mob-breathe', dose: { sets: 1, reps: 8 } },
-      { exerciseId: 'mob-catcow', dose: { sets: 1, reps: 6 } },
-      { exerciseId: 'mob-hamstring', dose: { sets: 1, seconds: 20, perSide: true } },
+      { exerciseId: 'mob-breathe', dose: { sets: 1, reps: 6 } },
+      { exerciseId: 'mob-ankle', dose: { sets: 1, reps: 8, perSide: true } },
       { exerciseId: 'mob-calf', dose: { sets: 1, seconds: 20, perSide: true } },
+      { exerciseId: 'mob-hamstring', dose: { sets: 1, seconds: 20, perSide: true } },
       { exerciseId: 'mob-shoulder', dose: { sets: 1, reps: 5, perSide: true } }
     ]
   })

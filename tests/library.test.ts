@@ -113,3 +113,28 @@ describe('daily messages', () => {
     expect(chosen?.key).toBe('fun-cat');
   });
 });
+
+describe('ankle work on the days with no strength workout (v0.11.0)', () => {
+  const ANKLE = ['mob-ankle', 'mob-anklecircle', 'mob-calf'];
+  const has = (id: string) => LIBRARY_TEMPLATES.find((t) => t.id === id)!.items.map((i) => i.exerciseId).filter((x) => ANKLE.includes(x));
+  it('every easier workout has ankle moves; the gentle one has all three', () => {
+    expect(has('light')).toEqual(['mob-anklecircle', 'mob-ankle', 'mob-calf']);
+    expect(has('recovery')).toEqual(['mob-ankle', 'mob-calf']);
+    expect(has('coordination')).toEqual(['mob-ankle', 'mob-calf']);
+    expect(has('foundations')).toEqual(['mob-ankle']);
+  });
+  it('the strength and Shortstop workouts are left as they were', () => {
+    for (const id of ['strength-a', 'strength-b', 'shortstop']) expect(has(id), id).toEqual([]);
+  });
+  it('ankle moves are stretches only: no jumping, sprinting or leg-work tags, so a tired-legs day never removes them, and each says to skip it when an ankle hurts', () => {
+    for (const id of ANKLE) {
+      expect(EXERCISE_BY_ID[id].loadTags, id).toEqual([]);
+      expect(EXERCISE_BY_ID[id].skipIf.join(' '), id).toMatch(/Ankle pain today/);
+    }
+  });
+  it('the Five-minute stretch is still about five minutes and the gentle workout still short', () => {
+    const secs = (id: string) => LIBRARY_TEMPLATES.find((t) => t.id === id)!.items.reduce((n, it) => n + ((it.dose.seconds ?? (it.dose.reps ?? 8) * 3) * (it.dose.perSide ? 2 : 1) + 30) * it.dose.sets, 0);
+    expect(secs('recovery') / 60).toBeLessThanOrEqual(5.5);
+    expect(secs('light') / 60).toBeLessThanOrEqual(12.5);
+  });
+});

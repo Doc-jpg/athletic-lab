@@ -152,3 +152,20 @@ Verification in this session: 58 vitest tests (readiness, program and progressio
 - The check-in is the whole data entry. If Eli does not check in, nothing is assumed and nothing is offered.
 - Expect the first strength session to be slightly off (too short, a swap that reads oddly). Write it here and push; the engine learns nothing from it yet.
 - The sample data is for exploring. Remove it before his first real session (Settings) so Progress is his alone.
+
+## 2026-11-17, ankle work on the days with no strength workout (v0.11.0)
+
+Deren, now that Eli is in basketball season and telling him what feels worn out: "On days where we're not strength training, can you build ankle stretching and mobility into those easier days?"
+
+- **What changed (templates version 4, catalog version 4):**
+  - Short gentle workout: ankle circles (new), ankle rocks (knee to wall) and the calf stretch come right after breathing and cat and cow. About 12 minutes now (was about 8 to 10).
+  - Five-minute stretch: ankle rocks and the calf stretch come first after breathing. Cat and cow came out and breathing went from 8 breaths to 6 so it is still five minutes. Its summary now says when it shows up (worn out or very sore), which has been true since v0.10.0.
+  - Quick feet: ankle rocks in the warm-up, calf stretch before the cooldown walk. About 15 minutes.
+  - Five-minute mini workout already had ankle rocks and balance; unchanged.
+  - Strength A, Strength B and Shortstop Movement are unchanged.
+- **New move:** Ankle circles (sit on a chair, draw slow circles with your toes), with its own drawing. The calf stretch got its own drawing too (it had been borrowing the ankle-rocks picture, which moves and shows a bent knee).
+- **These are stretches, not strength.** No load tags, so a tired-legs day never removes them, and none of them count toward the 48 hours between strength days or the weekly cap. Calf raises and balance holds stay where they were; nothing was added that loads the ankle.
+- **Pain rule unchanged and repeated on each move:** "Ankle pain today" is a skip condition on all three, and "Something hurts" still turns the day red and tells a parent. The app does not treat or assess anything.
+- **Existing phones** pick this up on the next open (library refresh by version). A workout already started today keeps its old list; the new one shows from the next day.
+- Tests: four new in tests/library.test.ts (which workouts carry ankle moves, strength days untouched, stretch-only tags plus the skip line, time limits).
+
