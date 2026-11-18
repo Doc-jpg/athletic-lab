@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import { useAthlete, useCheckIns, useExercises, useFlags, useMeta, useSessions, useSettings, useSportsLogs, useStatuses, useSupplements, useToday, useHabits, useClips, fmtDate, timeAgo } from '../hooks';
 import { useMode } from '../mode';
-import { GAME_VIDEO } from '../../engine/gamevideo';
+import { GAME_VIDEO, videoChoices, videoWriteUps } from '../../engine/gamevideo';
 import { db, saveSettings, setExerciseStatus, setParentPin, updateAthlete, clearAll } from '../../db/db';
 import { loadDemo, removeDemo } from '../../data/demo';
 import { addDays, newId, nowIso, DURATION_WORDS, INTENSITY_WORDS, type Load, type SupplementRecord } from '../../engine/types';
@@ -47,6 +47,7 @@ export function ParentPage() {
   const weekSessions = sessions.filter((s) => s.day >= weekStart && s.status !== 'planned');
   const weekLogs = logs.filter((l) => l.day >= weekStart);
   const weekCheckIns = checkIns.filter((c) => c.day >= weekStart);
+  const writeUps = videoWriteUps(checkIns);
   const open = flags.filter((f) => !f.acknowledgedAt);
   const days = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
 
@@ -100,7 +101,7 @@ export function ParentPage() {
                   <div key={d} className="item" style={{ alignItems: 'flex-start' }}>
                     <div style={{ minWidth: 64 }}><strong>{fmtDate(d).replace(/,.*/, '')}</strong><div className="tiny muted">{d.slice(5)}</div></div>
                     <div className="grow small">
-                      {c ? <div><span className={`pill ${c.color}`}>{COLOR_WORDS[c.color]}</span> energy {c.energy}/5, sleep {c.sleep}/5{c.pain ? `, pain${c.painWhere ? ` (${c.painWhere})` : ''}` : ''}{c.sick ? ', sick' : ''}{c.dizzy ? ', dizzy' : ''}{c.creatine !== undefined ? <> · creatine <strong>{c.creatine ? 'yes' : 'no'}</strong>, vitamin <strong>{c.multivitamin ? 'yes' : 'no'}</strong></> : ''}{c.gameVideo ? <span data-video={d}> · game video <strong>{GAME_VIDEO.parent[c.gameVideo]}</strong></span> : ''}</div> : <div className="muted">No check-in</div>}
+                      {c ? <div><span className={`pill ${c.color}`}>{COLOR_WORDS[c.color]}</span> energy {c.energy}/5, sleep {c.sleep}/5{c.pain ? `, pain${c.painWhere ? ` (${c.painWhere})` : ''}` : ''}{c.sick ? ', sick' : ''}{c.dizzy ? ', dizzy' : ''}{c.creatine !== undefined ? <> · creatine <strong>{c.creatine ? 'yes' : 'no'}</strong>, vitamin <strong>{c.multivitamin ? 'yes' : 'no'}</strong></> : ''}{c.gameVideo ? <span data-video={d}> · game video <strong>{GAME_VIDEO.parent[c.gameVideo]}</strong>{c.gameVideo === 'watched' && c.gameVideoNotes?.game ? ` (${c.gameVideoNotes.game}; takeaways below)` : ''}</span> : ''}</div> : <div className="muted">No check-in</div>}
                       {ls.map((l) => <div key={l.id}>{l.sport}{l.tournament ? ' (tournament)' : ''}{l.pitched ? ` pitched${l.pitchCount ? ` ${l.pitchCount}` : ''}` : l.heavyThrowing ? ', lots of throwing' : ''}{l.heavyRunning ? ', lots of running' : ''} · {DURATION_WORDS[l.duration]}, {INTENSITY_WORDS[l.intensity] ?? l.intensity}</div>)}
                       {ss.map((s) => <div key={s.id}><Link to={`/sessions/${s.id}`}>{s.templateName}</Link> · {s.status}{s.overallDifficulty ? `, felt ${['', 'easy', 'pretty easy', 'okay', 'hard', 'very hard'][s.overallDifficulty]}` : ''}{s.note ? ` · "${s.note}"` : ''}</div>)}
                       {load > 0 && <div className="tiny muted">sport load {load}</div>}
@@ -113,6 +114,20 @@ export function ParentPage() {
             </div>
             <p className="small muted mt">Strength and movement sessions this week: {weekSessions.filter((s) => (s.kind === 'strength' || s.kind === 'movement') && s.status === 'done').length} of {settings.strengthDaysPerWeek} planned. Recovery or red days: {weekCheckIns.filter((c) => c.color === 'orange' || c.color === 'red').length}. Creatine taken {weekCheckIns.filter((c) => c.creatine).length} of {weekCheckIns.length} check-in days, multivitamin {weekCheckIns.filter((c) => c.multivitamin).length} of {weekCheckIns.length}. Poop scooped on {habits.filter((h) => h.habit === 'scoop' && h.done && h.day >= weekStart && h.day <= day).map((h) => fmtDate(h.day).replace(/,.*/, '')).join(', ') || 'no day'} this week (due Monday and Thursday evenings).</p>
           </div>
+          {writeUps.length > 0 && (
+            <div className="card" data-testid="video-writeups">
+              <h3>Game video takeaways</h3>
+              <p className="small muted">What {name} wrote after watching. The three questions change from one video to the next. The app does not grade these; they are for you to read and talk about.</p>
+              <div className="list mt">
+                {writeUps.slice(0, 12).map((w) => (
+                  <div key={w.day} className="item" style={{ display: 'block' }}>
+                    <div className="title">{w.notes.game} <span className="small muted">· written {fmtDate(w.day)}</span></div>
+                    {w.notes.answers.map((a) => <div key={a.q} className="small mt"><div className="muted">{a.q}</div><div>{a.a}</div></div>)}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
           <div className="card">
             <h3>Progress</h3>
             <p className="small">{sessions.filter((s) => s.status === 'done' && s.kind !== 'foundations').length} sessions total, {sessions.filter((s) => s.status === 'done' && s.kind === 'foundations').length} Five-minute mini workouts. <Link to="/progress">Full progress page</Link> (same one {name} sees).</p>
@@ -158,7 +173,7 @@ export function ParentPage() {
           <div className="card">
             <h3>Training</h3>
             <div className="switch"><div><strong>Strength and movement days per week</strong><div className="small muted">Two or three, never on consecutive days. Strength A, Strength B and Shortstop Movement all count; the app keeps 48 hours between any two.</div></div><div className="row"><button className={`btn sm ${settings.strengthDaysPerWeek === 2 ? 'primary' : ''}`} onClick={() => saveSettings({ strengthDaysPerWeek: 2 })}>2</button><button className={`btn sm ${settings.strengthDaysPerWeek === 3 ? 'primary' : ''}`} onClick={() => saveSettings({ strengthDaysPerWeek: 3 })}>3</button></div></div>
-            <div className="switch"><div><strong>Ask about the basketball game video</strong><div className="small muted">Every day from November 1 through February 15, his daily questions ask about the video of his most recent game: "{GAME_VIDEO.choices[0].label}" / "{GAME_VIDEO.choices[1].label}" / "{GAME_VIDEO.choices[2].label}" His answer shows next to each day on the Week tab; two "not watched" days in a row raise an alert. The app does not know when games are or whether Coach posted a video; it shows what he said. This switch only changes the device you are holding, so set it on {name}'s device.</div></div><input type="checkbox" aria-label="Ask about the basketball game video" checked={settings.askGameVideo !== false} onChange={(e) => saveSettings({ askGameVideo: e.target.checked })} /></div>
+            <div className="switch"><div><strong>Ask about the basketball game video</strong><div className="small muted">Every day from November 1 through February 15, his daily questions ask: "{videoChoices()[0].label}" / "{videoChoices()[1].label}" / "{videoChoices()[2].label}" When he picks "watched" he has to name the game and answer three written questions before he can save: one about his takeaways and two that rotate (what he did great, what he could have done better, which teammate stood out and why, and so on). After he has written about a game, the sentences ask about a newer video. His answer shows next to each day on the Week tab and what he wrote shows under "Game video takeaways"; two "not watched" days in a row raise an alert. The app does not know when games are; it shows what he said. Coach has had the video up by the next morning, so "no new video" two days after a game is worth a look. This switch only changes the device you are holding, so set it on {name}'s device.</div></div><input type="checkbox" aria-label="Ask about the basketball game video" checked={settings.askGameVideo !== false} onChange={(e) => saveSettings({ askGameVideo: e.target.checked })} /></div>
             <div className="switch"><div><strong>Growth-spurt mode</strong><div className="small muted">Holds every progression and leans on balance and mobility while coordination catches up. Turn on when he shoots up; off a few weeks later.</div></div><input type="checkbox" checked={!!athlete.growthSpurtMode} onChange={(e) => updateAthlete({ growthSpurtMode: e.target.checked })} /></div>
             <div className="switch"><div><strong>Program start</strong><div className="small muted">{fmtDate(athlete.programStart)}. Phases count from here.</div></div><button className="btn sm" onClick={() => updateAthlete({ programStart: day })}>Restart today</button></div>
           </div>

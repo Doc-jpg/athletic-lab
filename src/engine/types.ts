@@ -315,6 +315,8 @@ export type Feel = 1 | 2 | 3 | 4 | 5;
 
 /** notyet: there is a video and he has not watched all of it. watched: he watched all of it. none: there is no video. */
 export type GameVideo = 'notyet' | 'watched' | 'none';
+/** His write-up of one game video. The questions are saved with the answers, because they change from video to video. */
+export interface GameVideoNotes { game: string; answers: Array<{ q: string; a: string }> }
 
 export interface CheckIn {
   id: string;
@@ -333,6 +335,8 @@ export interface CheckIn {
   multivitamin?: boolean;
   /** Basketball season only: what he said about the video of his most recent game. Undefined when it was not asked. */
   gameVideo?: GameVideo;
+  /** What he wrote after watching: which game, and his answers to that video's three questions. Only with gameVideo 'watched'. */
+  gameVideoNotes?: GameVideoNotes;
   note?: string;
   /** The verdict this check-in produced, kept for history. */
   color: ReadinessColor;

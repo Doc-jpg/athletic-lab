@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { GAME_VIDEO } from '../../engine/gamevideo';
-import type { GameVideo } from '../../engine/types';
+import { GAME_VIDEO, MIN_WORDS, notesComplete, promptsFor, videoChoices, type LastVideo } from '../../engine/gamevideo';
+import type { GameVideo, GameVideoNotes } from '../../engine/types';
 import { Sheet } from './Sheet';
 import type { Day, Feel, Sport, Duration, Intensity, SportsLog, Who } from '../../engine/types';
 import { FEEL_WORDS, SLEEP_WORDS, SPORT_WORDS, DURATION_WORDS, INTENSITY_WORDS, INTENSITY_HELP } from '../../engine/types';
@@ -35,10 +35,13 @@ export interface CheckInDraft {
   creatine: boolean;
   multivitamin: boolean;
   gameVideo?: GameVideo;
+  gameVideoNotes?: GameVideoNotes;
   note?: string;
 }
 
 const SPORTS: Sport[] = ['baseball', 'basketball', 'pe', 'running', 'play', 'other'];
+/** "Monday, November 16" from a day string. */
+const fmtDay = (d: Day) => new Date(d + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
 
 export function SportCard({ draft, onChange, onRemove }: { draft: SportDraft; onChange: (d: SportDraft) => void; onRemove: () => void }) {
   const set = (p: Partial<SportDraft>) => onChange({ ...draft, ...p });
@@ -93,19 +96,32 @@ function FiveScale({ value, words, onChange }: { value: Feel; words: Record<Feel
   );
 }
 
-export function CheckInSheet({ name, initialSports, initial, askGameVideo, onSave, onClose }: { name: string; initialSports?: SportDraft[]; initial?: Partial<CheckInDraft>; /** Basketball season: the game video question is asked and must be answered. */ askGameVideo?: boolean; onSave: (sports: SportDraft[], draft: CheckInDraft) => Promise<void>; onClose: () => void }) {
+export function CheckInSheet({ name, initialSports, initial, askGameVideo, lastVideo, videosWritten = 0, onSave, onClose }: { name: string; initialSports?: SportDraft[]; initial?: Partial<CheckInDraft>; /** Basketball season: the game video question is asked and must be answered. */ askGameVideo?: boolean; /** The last game video he wrote about before today. */ lastVideo?: LastVideo; /** How many videos he wrote about before today; picks the questions. */ videosWritten?: number; onSave: (sports: SportDraft[], draft: CheckInDraft) => Promise<void>; onClose: () => void }) {
   const [sports, setSports] = useState<SportDraft[]>(initialSports ?? []);
   const [draft, setDraft] = useState<CheckInDraft>({ energy: 4, sleep: 4, soreness: 'none', pain: false, sick: false, dizzy: false, creatine: false, multivitamin: false, ...(initial ?? {}) });
   const [busy, setBusy] = useState(false);
   const set = (p: Partial<CheckInDraft>) => setDraft({ ...draft, ...p });
   const red = draft.pain || draft.sick || draft.dizzy;
   const videoMissing = !!askGameVideo && !draft.gameVideo;
-  const complete = sportsComplete(sports) && !videoMissing;
+  // "I watched all of it" is more than a tap: he names the game and answers this video's three questions.
+  const prompts = promptsFor(videosWritten);
+  const notes: GameVideoNotes = draft.gameVideoNotes ?? { game: '', answers: [] };
+  const answerTo = (q: string) => notes.answers.find((a) => a.q === q)?.a ?? '';
+  const setAnswer = (q: string, a: string) => set({ gameVideoNotes: { game: notes.game, answers: [...notes.answers.filter((x) => x.q !== q), { q, a }] } });
+  const writeMissing = !!askGameVideo && draft.gameVideo === 'watched' && !notesComplete(draft.gameVideoNotes, prompts);
+  const complete = sportsComplete(sports) && !videoMissing && !writeMissing;
+  // Only what belongs to the answer he picked is saved: the write-up goes with "watched" and with nothing else.
+  const cleaned = (): CheckInDraft => {
+    if (!askGameVideo) return { ...draft, gameVideo: undefined, gameVideoNotes: undefined };
+    // A write-up he already typed is kept even if he taps a different sentence by mistake; it only counts while the answer is "watched".
+    if (draft.gameVideo !== 'watched') return draft;
+    return { ...draft, gameVideoNotes: { game: notes.game.trim(), answers: prompts.map((q) => ({ q, a: answerTo(q).trim() })) } };
+  };
   return (
     <Sheet
       title={`How are you today, ${name}?`}
       onClose={onClose}
-      footer={<><button className="btn" onClick={onClose}>Cancel</button><button className="btn primary" disabled={busy || !complete} title={complete ? undefined : videoMissing && sportsComplete(sports) ? 'Answer the game video question first' : 'Pick how hard each sport was first'} onClick={async () => { setBusy(true); await onSave(sports, askGameVideo ? draft : { ...draft, gameVideo: undefined }); setBusy(false); }}>Save my answers</button></>}
+      footer={<><button className="btn" onClick={onClose}>Cancel</button><button className="btn primary" disabled={busy || !complete} title={complete ? undefined : !sportsComplete(sports) ? 'Pick how hard each sport was first' : videoMissing ? 'Answer the game video question first' : 'Finish writing about the game video first'} onClick={async () => { setBusy(true); await onSave(sports, cleaned()); setBusy(false); }}>Save my answers</button></>}
     >
       <h3>What did you already do today?</h3>
       <p className="small muted">Tap one to add it. Nothing today? Skip this part. Shooting around in the driveway or playing catch counts as "Messing around", and that does not change your workout.</p>
@@ -133,12 +149,23 @@ export function CheckInSheet({ name, initialSports, initial, askGameVideo, onSav
         <div data-ask="game-video">
           <h3 className="mt">{GAME_VIDEO.question}</h3>
           <p className="small muted">{GAME_VIDEO.hint}</p>
+          {lastVideo && <p className="small"><strong>The last game video you wrote about: {lastVideo.game}</strong> ({fmtDay(lastVideo.day)}). {GAME_VIDEO.newer}</p>}
           {/* Three real answers, none highlighted until he picks one, and no default. */}
           <div style={{ display: 'grid', gap: 8 }}>
-            {GAME_VIDEO.choices.map((c) => <button key={c.value} className={`btn ${draft.gameVideo === c.value ? 'primary' : ''}`} style={{ textAlign: 'left', justifyContent: 'flex-start' }} onClick={() => set({ gameVideo: c.value })}>{draft.gameVideo === c.value ? '✓ ' : ''}{c.label}</button>)}
+            {videoChoices(lastVideo).map((c) => <button key={c.value} className={`btn ${draft.gameVideo === c.value ? 'primary' : ''}`} style={{ textAlign: 'left', justifyContent: 'flex-start' }} onClick={() => set({ gameVideo: c.value })}>{draft.gameVideo === c.value ? '✓ ' : ''}{c.label}</button>)}
           </div>
           {draft.gameVideo === 'notyet' && <div className="banner warn small mt">{GAME_VIDEO.go}</div>}
           {videoMissing && <p className="small muted mt">Pick one of the three before you save.</p>}
+          {draft.gameVideo === 'watched' && (
+            <div className="mt" data-ask="game-video-write">
+              <p className="small">{GAME_VIDEO.writeIntro}</p>
+              <div className="field"><label>{GAME_VIDEO.gameLabel}</label><input className="input" aria-label="Which game was it" value={notes.game} onChange={(e) => set({ gameVideoNotes: { game: e.target.value, answers: notes.answers } })} placeholder="for example Heartland" /></div>
+              {prompts.map((q, i) => (
+                <div className="field" key={q}><label>{i + 1}. {q}</label><textarea className="input" rows={3} aria-label={q} value={answerTo(q)} onChange={(e) => setAnswer(q, e.target.value)} /></div>
+              ))}
+              {writeMissing && <p className="small muted">Name the game and write at least {MIN_WORDS} words for each question. Then you can save.</p>}
+            </div>
+          )}
         </div>
       )}
       <h3 className="mt">Is anything wrong?</h3>

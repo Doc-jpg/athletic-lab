@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useHabits, useToday, useCheckIns, fmtDate } from '../hooks';
-import { GAME_VIDEO, notWatchedRun } from '../../engine/gamevideo';
+import { GAME_VIDEO, lastVideoNotes, notWatchedRun } from '../../engine/gamevideo';
 import { setHabit, addFlag } from '../../db/db';
 import { scoopStatus } from '../../engine/jobs';
 import type { CheckIn } from '../../engine/types';
@@ -21,6 +21,7 @@ export function JobsCard({ checkIn, askGameVideo, onAnswer }: { checkIn?: CheckI
   const checkIns = useCheckIns();
   const video = askGameVideo ? checkIn?.gameVideo : undefined;
   const run = askGameVideo ? notWatchedRun(checkIns, day) : 0;
+  const lastVideo = lastVideoNotes(checkIns, day);
   // Two days in a row of "not watched" tells a parent once. Nothing here scolds.
   useEffect(() => {
     if (run === 2) addFlag({ day, kind: 'job-missed', text: 'Said the basketball game video is not watched, two days in a row.' }).catch(() => undefined);
@@ -40,16 +41,18 @@ export function JobsCard({ checkIn, askGameVideo, onAnswer }: { checkIn?: CheckI
         </div>
         {askGameVideo && (
           <div className={`item ${video === 'watched' ? 'on' : ''}`} style={{ display: 'block', borderColor: video === 'notyet' ? 'var(--accent-2)' : undefined }} data-job="game-video">
-            <div className="title">{video === 'watched' ? '✓ ' : ''}Watch the video of your most recent basketball game</div>
+            <div className="title">{video === 'watched' ? '✓ ' : ''}Watch your basketball game video and write your takeaways</div>
             {!checkIn || !video ? (
               <div className="small muted">You answer this when you answer the questions. {GAME_VIDEO.why}</div>
             ) : video === 'notyet' ? (
               <>
                 <div className="small"><strong>Your answer: {GAME_VIDEO.said.notyet}.</strong> {GAME_VIDEO.go}</div>
-                <button className="btn primary block mt" onClick={onAnswer}>I watched all of it. Change my answer</button>
+                <button className="btn primary block mt" onClick={onAnswer}>I watched all of it. Write my takeaways</button>
               </>
+            ) : video === 'watched' ? (
+              <div className="small muted">You watched <strong>{checkIn.gameVideoNotes?.game ?? 'the game'}</strong> and wrote your takeaways. <button className="link" onClick={onAnswer}>Read or change what I wrote</button></div>
             ) : (
-              <div className="small muted">Your answer: <strong>{GAME_VIDEO.said[video]}</strong>. <button className="link" onClick={onAnswer}>Change my answer</button></div>
+              <div className="small muted">Your answer: <strong>{GAME_VIDEO.said.none}</strong>.{lastVideo ? ` The last one you wrote about: ${lastVideo.game} (${fmtDate(lastVideo.day)}).` : ''} Coach has the video up by the morning after a game. <button className="link" onClick={onAnswer}>Change my answer</button></div>
             )}
           </div>
         )}
