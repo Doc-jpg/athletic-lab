@@ -6,6 +6,7 @@ import { CheckInSheet, SportCard, newSportDraft, toLog, type SportDraft, type Ch
 import { Sheet, useToast } from '../components/Sheet';
 import { TourOffer } from '../components/Tour';
 import { JobsCard } from '../components/JobsCard';
+import { asksGameVideo } from '../../engine/gamevideo';
 import { readinessFor, recordCheckIn, planSession, ensureMessageShown, type TodayContext } from '../../engine/today';
 import { addSportsLog, db, updateSession } from '../../db/db';
 import { pickMessage, daysSinceLastSession, CATEGORY_WORDS } from '../../engine/habits';
@@ -103,7 +104,7 @@ export function TodayPage() {
       </div>
 
       {/* 1b. My jobs */}
-      <JobsCard checkIn={checkIn} onAnswer={() => setCheckInOpen(true)} />
+      <JobsCard checkIn={checkIn} askGameVideo={asksGameVideo(day, settings)} onAnswer={() => setCheckInOpen(true)} />
 
       {/* 2. Sports already logged */}
       <div className="card">
@@ -188,7 +189,7 @@ export function TodayPage() {
         )}
       </div>
 
-      {checkInOpen && <CheckInSheet name={name} initial={checkIn ? { energy: checkIn.energy, sleep: checkIn.sleep, soreness: checkIn.soreness, pain: checkIn.pain, painWhere: checkIn.painWhere, sick: checkIn.sick, dizzy: checkIn.dizzy, creatine: !!checkIn.creatine, multivitamin: !!checkIn.multivitamin, note: checkIn.note } : undefined} onSave={saveCheckIn} onClose={() => setCheckInOpen(false)} />}
+      {checkInOpen && <CheckInSheet name={name} initial={checkIn ? { energy: checkIn.energy, sleep: checkIn.sleep, soreness: checkIn.soreness, pain: checkIn.pain, painWhere: checkIn.painWhere, sick: checkIn.sick, dizzy: checkIn.dizzy, creatine: !!checkIn.creatine, multivitamin: !!checkIn.multivitamin, gameVideo: checkIn.gameVideo, note: checkIn.note } : undefined} askGameVideo={asksGameVideo(day, settings)} onSave={saveCheckIn} onClose={() => setCheckInOpen(false)} />}
       {sportOpen && (
         <Sheet title="Add something you did" onClose={() => setSportOpen(null)} footer={<><button className="btn" onClick={() => setSportOpen(null)}>Cancel</button><button className="btn primary" disabled={!sportOpen.intensity} onClick={async () => { await addSportsLog(toLog(sportOpen, day, mode)); setSportOpen(null); toast.show('Added'); }}>Add</button></>}>
           <div className="chips mb">{(['baseball', 'basketball', 'pe', 'running', 'play', 'other'] as Sport[]).map((s) => <button key={s} className={`chip sm ${sportOpen.sport === s ? 'on' : ''}`} onClick={() => setSportOpen({ ...sportOpen, sport: s })}>{SPORT_WORDS[s]}</button>)}</div>

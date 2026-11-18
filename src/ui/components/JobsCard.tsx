@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
-import { useHabits, useToday, fmtDate } from '../hooks';
+import { useHabits, useToday, useCheckIns, fmtDate } from '../hooks';
+import { GAME_VIDEO, notWatchedRun } from '../../engine/gamevideo';
 import { setHabit, addFlag } from '../../db/db';
 import { scoopStatus } from '../../engine/jobs';
 import type { CheckIn } from '../../engine/types';
@@ -9,7 +10,7 @@ import type { CheckIn } from '../../engine/types';
  * daily questions), the dog poop on its schedule, and shots on the goal now that it has a light.
  * A missed scoop day raises a parent alert once; nothing here scolds.
  */
-export function JobsCard({ checkIn, onAnswer }: { checkIn?: CheckIn | null; onAnswer: () => void }) {
+export function JobsCard({ checkIn, askGameVideo, onAnswer }: { checkIn?: CheckIn | null; askGameVideo?: boolean; onAnswer: () => void }) {
   const day = useToday();
   const habits = useHabits();
   const scoop = scoopStatus(habits, day);
@@ -17,6 +18,13 @@ export function JobsCard({ checkIn, onAnswer }: { checkIn?: CheckIn | null; onAn
   useEffect(() => {
     if (scoop.state === 'missed' && scoop.missedDay) addFlag({ day: scoop.missedDay, kind: 'job-missed', text: `Dog poop not scooped by ${fmtDate(scoop.missedDay)} evening.` }).catch(() => undefined);
   }, [scoop.state, scoop.missedDay]);
+  const checkIns = useCheckIns();
+  const video = askGameVideo ? checkIn?.gameVideo : undefined;
+  const run = askGameVideo ? notWatchedRun(checkIns, day) : 0;
+  // Two days in a row of "not watched" tells a parent once. Nothing here scolds.
+  useEffect(() => {
+    if (run === 2) addFlag({ day, kind: 'job-missed', text: 'Said the basketball game video is not watched, two days in a row.' }).catch(() => undefined);
+  }, [run, day]);
   const urgent = scoop.state === 'due-today' || scoop.state === 'missed';
   return (
     <div className="card" data-tour="jobs" style={{ borderColor: urgent ? 'var(--accent-2)' : undefined }}>
@@ -30,6 +38,21 @@ export function JobsCard({ checkIn, onAnswer }: { checkIn?: CheckIn | null; onAn
             <div className="small muted">You say yes or no when you answer the questions.</div>
           )}
         </div>
+        {askGameVideo && (
+          <div className={`item ${video === 'watched' ? 'on' : ''}`} style={{ display: 'block', borderColor: video === 'notyet' ? 'var(--accent-2)' : undefined }} data-job="game-video">
+            <div className="title">{video === 'watched' ? '✓ ' : ''}Watch the video of your most recent basketball game</div>
+            {!checkIn || !video ? (
+              <div className="small muted">You answer this when you answer the questions. {GAME_VIDEO.why}</div>
+            ) : video === 'notyet' ? (
+              <>
+                <div className="small"><strong>Your answer: {GAME_VIDEO.said.notyet}.</strong> {GAME_VIDEO.go}</div>
+                <button className="btn primary block mt" onClick={onAnswer}>I watched all of it. Change my answer</button>
+              </>
+            ) : (
+              <div className="small muted">Your answer: <strong>{GAME_VIDEO.said[video]}</strong>. <button className="link" onClick={onAnswer}>Change my answer</button></div>
+            )}
+          </div>
+        )}
         <div className={`item ${scoop.state === 'done-today' ? 'on' : ''}`} style={{ display: 'block' }}>
           <div className="title">{scoop.state === 'done-today' ? '✓ ' : ''}Scoop the dog poop</div>
           <div className="small"><strong>{scoop.headline}</strong> {scoop.text}</div>

@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { GAME_VIDEO } from '../../engine/gamevideo';
+import type { GameVideo } from '../../engine/types';
 import { Sheet } from './Sheet';
 import type { Day, Feel, Sport, Duration, Intensity, SportsLog, Who } from '../../engine/types';
 import { FEEL_WORDS, SLEEP_WORDS, SPORT_WORDS, DURATION_WORDS, INTENSITY_WORDS, INTENSITY_HELP } from '../../engine/types';
@@ -32,6 +34,7 @@ export interface CheckInDraft {
   dizzy: boolean;
   creatine: boolean;
   multivitamin: boolean;
+  gameVideo?: GameVideo;
   note?: string;
 }
 
@@ -90,18 +93,19 @@ function FiveScale({ value, words, onChange }: { value: Feel; words: Record<Feel
   );
 }
 
-export function CheckInSheet({ name, initialSports, initial, onSave, onClose }: { name: string; initialSports?: SportDraft[]; initial?: Partial<CheckInDraft>; onSave: (sports: SportDraft[], draft: CheckInDraft) => Promise<void>; onClose: () => void }) {
+export function CheckInSheet({ name, initialSports, initial, askGameVideo, onSave, onClose }: { name: string; initialSports?: SportDraft[]; initial?: Partial<CheckInDraft>; /** Basketball season: the game video question is asked and must be answered. */ askGameVideo?: boolean; onSave: (sports: SportDraft[], draft: CheckInDraft) => Promise<void>; onClose: () => void }) {
   const [sports, setSports] = useState<SportDraft[]>(initialSports ?? []);
   const [draft, setDraft] = useState<CheckInDraft>({ energy: 4, sleep: 4, soreness: 'none', pain: false, sick: false, dizzy: false, creatine: false, multivitamin: false, ...(initial ?? {}) });
   const [busy, setBusy] = useState(false);
   const set = (p: Partial<CheckInDraft>) => setDraft({ ...draft, ...p });
   const red = draft.pain || draft.sick || draft.dizzy;
-  const complete = sportsComplete(sports);
+  const videoMissing = !!askGameVideo && !draft.gameVideo;
+  const complete = sportsComplete(sports) && !videoMissing;
   return (
     <Sheet
       title={`How are you today, ${name}?`}
       onClose={onClose}
-      footer={<><button className="btn" onClick={onClose}>Cancel</button><button className="btn primary" disabled={busy || !complete} title={complete ? undefined : 'Pick how hard each sport was first'} onClick={async () => { setBusy(true); await onSave(sports, draft); setBusy(false); }}>Save my answers</button></>}
+      footer={<><button className="btn" onClick={onClose}>Cancel</button><button className="btn primary" disabled={busy || !complete} title={complete ? undefined : videoMissing && sportsComplete(sports) ? 'Answer the game video question first' : 'Pick how hard each sport was first'} onClick={async () => { setBusy(true); await onSave(sports, askGameVideo ? draft : { ...draft, gameVideo: undefined }); setBusy(false); }}>Save my answers</button></>}
     >
       <h3>What did you already do today?</h3>
       <p className="small muted">Tap one to add it. Nothing today? Skip this part. Shooting around in the driveway or playing catch counts as "Messing around", and that does not change your workout.</p>
@@ -125,6 +129,18 @@ export function CheckInSheet({ name, initialSports, initial, onSave, onClose }: 
         <button className={`btn ${draft.creatine ? 'primary' : ''}`} onClick={() => set({ creatine: !draft.creatine })}>{draft.creatine ? '✓ ' : ''}Creatine</button>
         <button className={`btn ${draft.multivitamin ? 'primary' : ''}`} onClick={() => set({ multivitamin: !draft.multivitamin })}>{draft.multivitamin ? '✓ ' : ''}Multivitamin</button>
       </div>
+      {askGameVideo && (
+        <div data-ask="game-video">
+          <h3 className="mt">{GAME_VIDEO.question}</h3>
+          <p className="small muted">{GAME_VIDEO.hint}</p>
+          {/* Three real answers, none highlighted until he picks one, and no default. */}
+          <div style={{ display: 'grid', gap: 8 }}>
+            {GAME_VIDEO.choices.map((c) => <button key={c.value} className={`btn ${draft.gameVideo === c.value ? 'primary' : ''}`} style={{ textAlign: 'left', justifyContent: 'flex-start' }} onClick={() => set({ gameVideo: c.value })}>{draft.gameVideo === c.value ? '✓ ' : ''}{c.label}</button>)}
+          </div>
+          {draft.gameVideo === 'notyet' && <div className="banner warn small mt">{GAME_VIDEO.go}</div>}
+          {videoMissing && <p className="small muted mt">Pick one of the three before you save.</p>}
+        </div>
+      )}
       <h3 className="mt">Is anything wrong?</h3>
       <p className="small muted">Tired muscles are normal. These three are different. Tap one only if it is true.</p>
       <div className="chips">

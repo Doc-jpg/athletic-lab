@@ -69,10 +69,28 @@ const shot = (page, name) => page.screenshot({ path: path.join(shotsDir, `${name
   await page.click('[data-testid="effort"] >> text=Messing around');
   expect('messing around explains itself', /does not change your workout/.test(await body()), true);
   await shot(page, '01b_checkin_effort');
+  // 2026-11-18: in basketball season the daily questions ask about the game video, three sentences, no default.
+  const md = (() => { const d = new Date(); return `${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; })();
+  const inSeason = md >= '11-01' || md <= '02-15';
+  const video = page.locator('[data-ask="game-video"]');
+  expect('game video is asked only in basketball season', (await video.count()) === 1, inSeason);
+  if (inSeason) {
+    expect('game video has three sentences to pick from', await video.locator('button').count(), 3);
+    expect('save waits for the game video answer', await page.locator('role=button[name="Save my answers"]').isDisabled(), true);
+    await video.getByRole('button', { name: 'There is a video and I have not watched all of it.' }).click();
+    expect('not watched says to watch it today', /Watch all of it today/.test(await video.innerText()), true);
+    await video.scrollIntoViewIfNeeded();
+    await shot(page, '01c_checkin_game_video');
+  }
   await page.click('role=button[name="Save my answers"]');
   await page.waitForSelector('text=You answered today');
   await settle();
   t = await body();
+  if (inSeason) {
+    const job = page.locator('[data-job="game-video"]');
+    expect('My jobs shows the game video is not watched yet', /Your answer: not watched yet/.test(await job.innerText()), true);
+    expect('and gives him the way to change it', await job.getByRole('button', { name: 'I watched all of it. Change my answer' }).count(), 1);
+  }
   expect('shoot-around: still a fresh, normal day', /Fresh and ready/.test(t), true);
   expect('shoot-around: the planned strength workout is offered', /Strength A/.test(t), true);
 
@@ -86,10 +104,15 @@ const shot = (page, name) => page.screenshot({ path: path.join(shotsDir, `${name
   await page.fill('input[placeholder="for example 42"]', '40');
   await page.click('role=button[name="Creatine"]');
   await page.click('role=button[name="Multivitamin"]');
+  if (inSeason) {
+    expect('his earlier game video answer is still picked', /✓ There is a video and I have not watched all of it\./.test(await video.innerText()), true);
+    await video.getByRole('button', { name: 'I watched all of the video.' }).click();
+  }
   await page.click('role=button[name="Save my answers"]');
   await page.waitForSelector('text=You answered today');
   await settle();
   t = await body();
+  if (inSeason) expect('My jobs shows the game video as watched', /✓ Watch the video of your most recent basketball game/.test(await page.locator('[data-job="game-video"]').innerText()), true);
   expect('2026-11-12: one hard sport day is still a real workout', /Hard day, and still a real workout/.test(t) && /One hard day does not change your workout/.test(t), true);
   expect('one hard day still offers the strength workout', /Today: Strength A/.test(t), true);
   await shot(page, '02a_hard_day_real_workout');
@@ -267,6 +290,7 @@ const shot = (page, name) => page.screenshot({ path: path.join(shotsDir, `${name
   t = await body();
   expect('parent sees the pain alert', /Reported pain/.test(t), true);
   expect('parent sees the week', /last 7 days/i.test(t), true);
+  if (inSeason) expect('parent sees the game video answer on the day', /game video watched/.test(await page.locator('[data-video]').last().innerText()), true);
   expect('parent sees the creatine and vitamin answer', /creatine yes, vitamin yes/.test(t), true);
   await shot(page, '08_parent');
   await page.click('role=button[name="Exercises"]');

@@ -91,6 +91,8 @@ export interface Settings {
   reminders: Reminders;
   /** Strength sessions per week the parent allows (2 or 3). */
   strengthDaysPerWeek: 2 | 3;
+  /** Ask about the basketball game video during basketball season. Missing means asked. Per device, like every setting. */
+  askGameVideo?: boolean;
   tourSeenAt?: Iso;
   visibilityNoticeSeenAt?: Iso;
   demoLoaded?: boolean;
@@ -311,6 +313,9 @@ export interface SportsLog {
 
 export type Feel = 1 | 2 | 3 | 4 | 5;
 
+/** notyet: there is a video and he has not watched all of it. watched: he watched all of it. none: there is no video. */
+export type GameVideo = 'notyet' | 'watched' | 'none';
+
 export interface CheckIn {
   id: string;
   day: Day;
@@ -326,6 +331,8 @@ export interface CheckIn {
   /** The daily attestation Dad asked for (2026-11-07): did he take what he was given this morning. Undefined on check-ins made before this existed. */
   creatine?: boolean;
   multivitamin?: boolean;
+  /** Basketball season only: what he said about the video of his most recent game. Undefined when it was not asked. */
+  gameVideo?: GameVideo;
   note?: string;
   /** The verdict this check-in produced, kept for history. */
   color: ReadinessColor;

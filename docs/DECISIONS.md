@@ -169,3 +169,17 @@ Deren, now that Eli is in basketball season and telling him what feels worn out:
 - **Existing phones** pick this up on the next open (library refresh by version). A workout already started today keeps its old list; the new one shows from the next day.
 - Tests: four new in tests/library.test.ts (which workouts carry ankle moves, strength days untouched, stretch-only tags plus the skip line, time limits).
 
+## 2026-11-18, the basketball game video in the daily questions (v0.12.0)
+
+Deren: "after his first basketball game, coach shared the YouTube of the recording... I asked Eli to watch it and he said he didn't need to. I don't think we will really watch back GameChanger for baseball, but during basketball season, part of his check-in needs to be if he's watched the most recent game tape."
+
+- **Where:** in the daily questions, between creatine and multivitamin and "Is anything wrong?". Also a line on My jobs and on Dad's page.
+- **Three sentences, no default, Save waits.** Same lesson as Dance Lab that morning: every real case needs a true answer. "The video of your most recent basketball game: which one of these is true?" / "There is a video and I have not watched all of it." / "I watched all of the video." / "There is no video of my most recent game." Hint: "Coach shares a video of the game. If you do not know whether there is one, ask Mom or Dad before you answer." "All of it" is on purpose, so half-watched has an honest answer.
+- **Not watched** shows "Watch all of it today. Look for one thing you did well and one thing to do better. Then change your answer." in the sheet and on My jobs, with a button that opens the questions again.
+- **Asked every day of the season**, not only after a game. The app has no game dates in it and will not get them: this repository is public and a child's game schedule does not belong in it. "Most recent game" is his to know, and answering "I watched all of the video" on a day with no new game is true and one tap.
+- **Season:** November 1 through February 15 every year (`src/engine/gamevideo.ts`). School ball ends the first week of February; the extra days are for the last game. Baseball is not part of this. A parent switch on Dad's page (Training) turns it off; settings are per device, so it is set on his device.
+- **What Dad sees:** "game video watched", "game video NOT watched" or "game video said there is no video" next to each day. Two "not watched" days in a row raise one alert (`job-missed`). The app cannot know whether Coach posted a video; "said there is no video" is the answer to check.
+- Stored on the day's check-in record as `gameVideo` (syncs and backs up with it). Undefined when it was not asked.
+- Tests: 4 new in tests/gamevideo.test.ts; the phone walk checks that Save waits, the three sentences, My jobs before and after, the kept answer on reopening, and Dad's page.
+- Offered, not built: one line he types after watching (one thing he did well, one to do better), which would make "watched" mean something Dad can read.
+
